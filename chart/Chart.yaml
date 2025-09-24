@@ -20,5 +20,5 @@ dependencies:
     alias: identity
     version: ">0.0.0"
   - name: web-application
-    alias: researcher
+    alias: mastra
     version: ">0.0.0"

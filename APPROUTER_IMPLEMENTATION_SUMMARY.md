@@ -86,7 +86,7 @@ Successfully implemented SAP App Router with IAS (Identity Authentication Servic
 1. Resolve the `CreateContainerConfigError` by checking App Router configuration
 2. Verify IAS authentication flow is working
 3. Test the complete authentication flow end-to-end
-4. Apply the same pattern to the main agent services (researcher, chat, assistant-ui)
+4. Apply the same pattern to the main agent services (mastra, chat, assistant-ui)
 
 ## Key Learnings
 1. CDS CLI provides excellent scaffolding for SAP App Router with IAS integration

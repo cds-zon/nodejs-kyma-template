@@ -113,20 +113,20 @@ class TokenService {
     }
   }
 
-  async testResearcherService() {
-    console.log('\n📡 Testing Researcher Service with XSSEC Token...');
+  async testmastraService() {
+    console.log('\n📡 Testing mastra Service with XSSEC Token...');
     
     try {
        
-      // Test researcher endpoints
+      // Test mastra endpoints
       const endpoints = [
-        '/researcher/'
+        '/mastra/'
           ];
       
       for (const endpoint of endpoints) {
         try {
           const response = await this.makeAuthenticatedRequest(
-            'researcher-api',
+            'mastra-api',
             `${apiUrl}${endpoint}`,
             { timeout: 10000 }
           );
@@ -140,7 +140,7 @@ class TokenService {
       }
       
     } catch (error) {
-      console.log(`   ❌ Researcher service test failed: ${error.message}`);
+      console.log(`   ❌ mastra service test failed: ${error.message}`);
     }
   }
 
@@ -156,11 +156,11 @@ async function runTests() {
   try {
     // Test token acquisition
     await tokenService.getToken('user-api');
-    await tokenService.getToken('researcher-api');
+    await tokenService.getToken('mastra-api');
     // Test service calls
     await tokenService.testUserService();
 
-    await tokenService.testResearcherService();
+    await tokenService.testmastraService();
     await tokenService.testChatService();
     
     

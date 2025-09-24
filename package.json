@@ -16,16 +16,16 @@
     "ctz": "^0.2.8"
   },
   "scripts": {
-    "start": "cds serve",
-    "watch": "cds watch",
-    "debug": "cds debug",
+    "start": "npx cds serve",
+    "watch": "npx cds watch",
+    "debug": "npx cds debug",
     "serve": "npm run serve:cds & npm run serve:approuter",
-    "serve:cds": "cds serve --profile dev",
-    "serve:hybrid": "cds bind --exec -- npm run serve",
-    "serve:hybrid:approuter": "cds bind --exec -- npm run serve:approuter",
+    "serve:cds": "npx cds serve --profile dev",
+    "serve:hybrid": "npx cds bind --exec -- npm run serve",
+    "serve:hybrid:approuter": "npx cds bind --exec -- npm run serve:approuter",
     "serve:hybrid:cds": "npm bind --exec -- cds serve",
     "serve:approuter": "node node_modules/@sap/approuter/approuter.js  --workingDir chart/router --port 9000 ",
-    "build": "cds build --production && cp -r app/router gen/chart/router",
+    "build": "npx cds build --production && cp -r app/router gen/chart/router",
     "build:containers": "ctz containerize.yaml --log",
     "build:push": "ctz containerize.yaml --log --push",
     "bind:srv": "cds bind --to-app-services router-srv --on k8s",
@@ -38,7 +38,7 @@
     "setup:local": "npm run bind:all && npm run serve:hybrid",
     "setup:dev": "npm install && npm run bind:auth && npm run serve",
     "deploy": "cds up -2 k8s",
-    "deploy:helm": "npm run build && helm upgrade v1 ./gen/chart --install --create-namespace",
+    "deploy:helm": "npm run build && helm upgrade ias ./gen/chart --install --create-namespace",
     "copy-docker-secret": "./scripts/copy-docker-secret.sh",
     "deploy:cf": "cds deploy",
     "add:approuter": "cds add approuter",
@@ -131,5 +131,8 @@
       },
       "destinations": true
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ]
 }

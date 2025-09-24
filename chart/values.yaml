@@ -7,7 +7,7 @@ global:
     name: docker-registry
   image:
     registry: scai-dev.common.repositories.cloud.sap/router
-    tag: v3
+    tag: v1
 srv:
   image:
     repository: api
@@ -124,6 +124,7 @@ approuter:
         - exact: "https://*.{{ tpl .Values.global.domain . }}"
         - exact: "http://localhost:9000"
         - exact: "http://localhost:4338"
+        - exact: "http://localhost:4111"
       allowMethods:
         - "GET"
         - "POST"
@@ -172,15 +173,14 @@ approuter:
 
 
 ############################# Application itself - to be replaced with actual application #############################
-researcher:  
+mastra:  
   networkSecurity:
     allowNamespaceInternal: true
   expose:
     enabled: false # exposed via approuter
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
-    repository: researcher
-    tag: dev
+    repository: mastra
   port: 8080
   resources:
     limits:
@@ -193,9 +193,9 @@ researcher:
   runAsUser: 1000
   health:
     liveness:
-      path: /
+      path: /health
     readiness:
-      path: /
+      path: /health
   bindings:
     destination:
       serviceInstanceName: "destination"
@@ -203,7 +203,7 @@ researcher:
       serviceInstanceName: "identity"
       parameters:
         credential-type: X509_GENERATED
-        app-identifier: researcher
+        app-identifier: mastra
   env:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
@@ -211,7 +211,8 @@ researcher:
     OPENAI_BASE_URL: http://ai-core-proxy:3002
     OPENAI_APIKEY: dummy-api-key
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otlp-dashboard:18889
-    OTEL_SERVICE_NAME: researcher
+    OTEL_SERVICE_NAME: mastra
+    PORT: 8080
   
 
 ############################# Service Instances #############################
@@ -238,15 +239,15 @@ identity:
     provided-apis:
       - name: user-api
         type: public
-      - name: researcher-api
+      - name: mastra-api
         type: public
 
 backendDestinations:
   user-api:
     service: srv
     forwardAuthToken: true
-  researcher-api:
-    service: researcher
+  mastra-api:
+    service: mastra
     forwardAuthToken: true
 
 destination:
@@ -268,12 +269,12 @@ destination:
               HTML5.IASDependencyName: user-api
               HTML5.DynamicDestination: true
               HTML5.ForwardAuthToken: true
-            - Name: researcher-api
-              URL: ~{researcher-api/researcher-url}
+            - Name: mastra-api
+              URL: ~{mastra-api/mastra-url}
               Authentication: NoAuthentication
               Type: HTTP
               ProxyType: Internet
-              HTML5.IASDependencyName: researcher-api
+              HTML5.IASDependencyName: mastra-api
               HTML5.DynamicDestination: true
               HTML5.ForwardAuthToken: true
 
