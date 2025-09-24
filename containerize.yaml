@@ -1,0 +1,24 @@
+_schema-version: '1.0'
+repository: scai-dev.common.repositories.cloud.sap
+tag: v3
+before-all:
+  - export TARGETPLATFORM=linux/amd64
+  - npx cds build --production
+  - cp -r app/router gen/chart/router
+
+modules:
+  - name: router/api
+    build-parameters:
+      commands:
+        - docker buildx build --platform linux/amd64 -t router/api:v3 -f Dockerfile . --load
+        # - name: router/app
+        #   build-parameters:
+        #     # dockerfile: app/router/Dockerfile
+        #     commands:
+        #       - docker buildx build --builder multi-platform --no-cache --platform linux/amd64 -t scai-dev.common.repositories.cloud.sap/router/app:v3 -f app/router/Dockerfile . --push
+  - name: router-approuter
+    build-parameters:
+      commands:
+        - cp -r app/router gen/chart/router
+        - docker pull sapse/approuter:20.7.0
+        - docker tag sapse/approuter:20.7.0 router/approuter:v3

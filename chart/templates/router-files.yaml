@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Release.Name }}-approuter-static-files"
+  namespace: "{{ .Release.Namespace }}"
+data:
+  xs-app.json: |
+{{ .Files.Get "router/xs-app.json" | indent 4 }}
+  index.html: |
+{{ .Files.Get "router/index.html" | indent 4 }}
+  favicon.svg: |
+{{ .Files.Get "router/favicon.svg" | indent 4 }}
