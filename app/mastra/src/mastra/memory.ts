@@ -2,18 +2,19 @@ import {Memory} from "@mastra/memory";
 import {LibSQLStore, LibSQLVector} from "@mastra/libsql";
 import { fastembed } from "@mastra/fastembed";
 import {env} from "process";
-
+const url=import.meta.url;
+console.log(__dirname,url);
 export const memory = new Memory({
     embedder: fastembed,
     // Optional storage configuration - libsql will be used by default
     storage: new LibSQLStore({
-        url: "file:memory.db",
+        url: `file:${env.DATABASE_DIR}/memory.db`,
         // url:  env["ConnectionStrings__mastra-memory"] || "file:mastra_memory.db?mode=memory&cache=shared",
     }),
 
     // Optional vector database for semantic search
     vector: new LibSQLVector({
-        connectionUrl: "file:vector.db"
+        connectionUrl: `file:${env.DATABASE_DIR}/vector.db`
     }),
 
     // Memory configuration options

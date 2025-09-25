@@ -1,6 +1,6 @@
 _schema-version: '1.0'
 repository: scai-dev.common.repositories.cloud.sap
-tag: v1
+tag: v2
 before-all:
   - export TARGETPLATFORM=linux/amd64
   - npx cds build --production
@@ -10,16 +10,16 @@ modules:
   - name: router/api
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t router/api:v1 -f Dockerfile . --load
+        - docker buildx build --platform linux/amd64 -t router/api:v2 -f Dockerfile . --load
   
   - name: agents/mastra
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t agents/mastra:v1 -f app/mastra/Dockerfile --target dev . --load
+        - docker buildx build --platform linux/amd64 -t agents/mastra:v2 -f app/mastra/Dockerfile --target dev . --load
 
   - name: ias-approuter
     build-parameters:
       commands:
         - cp -r app/router gen/chart/router
         - docker pull sapse/approuter:20.7.0
-        - docker tag sapse/approuter:20.7.0 ias-approuter:v1
+        - docker tag sapse/approuter:20.7.0 ias-approuter:v2

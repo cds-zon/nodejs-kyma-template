@@ -134,6 +134,43 @@ class TokenService {
         }
       }
 
+      console.log("\n📋 Test 1: List available agents");
+      const agentsResponse = await this.makeAuthenticatedRequest(  "mastra-api",`${apiUrl}/api/agents`);
+      console.log(`✅ Agents listed: ${Object.keys(agentsResponse.data).length} agents found`);
+      console.log(`📄 Available agents: ${Object.keys(agentsResponse.data).join(', ')}`);
+
+      // Test 2: Create a thread
+      console.log("\n📋 Test 2: Create memory thread");
+      const threadData = {
+        threadId: "test-thread-1",
+        resourceId: "test-resource-1",
+        title: "Memory Persistence Test Thread",
+        metadata: {
+          testType: "persistence",
+          createdAt: new Date().toISOString()
+        }
+      };
+
+      const threadResponse = await this.makeAuthenticatedRequest(
+        "mastra-api",
+        `${apiUrl}/api/memory/threads?agentId=researchAgent`,
+        {
+          method: "POST",
+          data: threadData
+        }
+      );
+      console.log(`✅ Thread created: ${threadResponse.status}`);
+      console.log(`📄 Thread data: ${JSON.stringify(threadResponse.data, null, 2)}`);
+
+      // Test 3: Save messages
+      await messageSaveTest.bind(this)(threadResponse);
+
+      // Test 4: Retrieve messages
+      console.log("\n📋 Test 4: Retrieve saved messages");
+      const retrieveResponse = await this.makeAuthenticatedRequest(
+        "mastra-api",
+        `${apiUrl}/api/memory/threads/${threadResponse.data.threadId}/messages?agentId=${this.testData.agentId}&limit=10`
+      );
       // Test the stream/vnext endpoint with proper payload structure
       const streamResponse = await this.makeAuthenticatedRequest(
         "mastra-api",
@@ -172,6 +209,42 @@ class TokenService {
         console.log(`   📊 Error status: ${error.response.status}`);
         console.log(`   📄 Error response: ${error.response.data}`);
       }
+    }
+
+    async function messageSaveTest( threadResponse) {
+      console.log("\n📋 Test 3: Save test messages");
+      const messagesData = {
+        messages: [
+          {
+            id: `msg-1-${Date.now()}`,
+            content: "Hello! This is a test message for memory persistence verification.",
+            role: "user",
+            type: "text",
+            threadId: threadResponse.data.id,
+            resourceId: threadResponse.data.resourceId,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: `msg-2-${Date.now()}`,
+            content: "This is a response message that should be stored in memory.",
+            role: "assistant",
+            type: "text",
+            threadId: threadResponse.data.id,
+            resourceId: threadResponse.data.resourceId,
+            createdAt: new Date().toISOString()
+          }
+        ]
+      };
+
+      const messagesResponse = await this.makeAuthenticatedRequest(
+        "mastra-api",
+        `${apiUrl}/api/memory/save-messages?agentId=researchAgent`,
+        {
+          method: "POST",
+          data: messagesData
+        }
+      );
+      console.log(`✅ Messages saved: ${messagesResponse.status}`);
     }
   }
 }

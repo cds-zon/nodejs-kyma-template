@@ -39,6 +39,7 @@
     "setup:dev": "npm install && npm run bind:auth && npm run serve",
     "deploy": "npx cds up -2 k8s",
     "deploy:helm": "npm run build && helm upgrade v1 ./gen/chart --install --create-namespace",
+    "deploy:mastra:fast": "npm run build:containers -- --modules=agents/mastra --push && npm run deploy:helm",
     "copy-docker-secret": "./scripts/copy-docker-secret.sh",
     "deploy:cf": "cds deploy",
     "add:approuter": "cds add approuter",
@@ -61,7 +62,9 @@
     "cds": "cds",
     "ctz": "ctz",
     "test": "node --test",
-    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js"
+    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js",
+    "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-test.spec.js"
+  
   },
   "private": true,
   "cds": {

@@ -20,7 +20,7 @@ FROM base AS prod
 COPY --from=base /usr/src/app/ /usr/src/app/
 WORKDIR /usr/src/app
 RUN pnpm build
-RUN chown -R node:node /usr/src/app && chmod -R 755 /usr/src/app
+RUN mkdir -p /usr/src/app/db && chown -R node:node /usr/src/app && chmod -R 755 /usr/src/app
 
 USER node
 CMD ["node", "--import=./.mastra/output/instrumentation.mjs", ".mastra/output/index.mjs"]
@@ -30,6 +30,6 @@ CMD ["node", "--import=./.mastra/output/instrumentation.mjs", ".mastra/output/in
 FROM base AS dev
 COPY --from=base /usr/src/app/ /usr/src/app/
 WORKDIR /usr/src/app
-RUN mkdir -p /usr/src/app/store && chown -R node:node /usr/src/app && chmod -R 755 /usr/src/app
+RUN mkdir -p /usr/src/app/db  && chmod -R 755 /usr/src/app && chown -R node:node /usr/src/app
 USER node
 CMD pnpm dev

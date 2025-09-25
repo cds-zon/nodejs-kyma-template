@@ -180,12 +180,17 @@ mastra:
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
-    tag: v1
+    tag: v2
+  hpa:
+    maxReplicas: 1
+    minReplicas: 1
+
+
   port: 8080
   resources:
     limits:
-      ephemeral-storage: 100M
-      memory: 1Gi
+      ephemeral-storage: 1Gi
+      memory: 2Gi
     requests:
       ephemeral-storage: 100M
       cpu: 100m
@@ -214,21 +219,39 @@ mastra:
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
     PORT: 8080
-  # Additional volumes for storage files and temporary .env file
+    SYNC_URL: http://turso:8080
+    DATABASE_DIR: .
+  # Additional volumes for entire app directory and temporary .env file
   additionalVolumes:
-    - name: mastra-storage
-      persistentVolumeClaim:
-        claimName: mastra-storage-pvc
-      volumeMount:
-        mountPath: /usr/src/app/store
-        subPath: store
+    # - name: mastra-app-storage
+    #   persistentVolumeClaim:
+    #     claimName: mastra-pvc # mastra-pvc
+    #   volumeMount:
+    #     mountPath: /usr/src/app/db
+    # - name: mastra-app-storage-db
+    #   persistentVolumeClaim:
+    #     claimName: mastra-pvc-db
+    #   volumeMount:
+    #     mountPath: /usr/src/app/
+    #     subPath: mastra.db
+    # - name: mastra-app-storage-vector
+    #   persistentVolumeClaim:
+    #     claimName: mastra-pvc-vector
+    #   volumeMount:
+    #     mountPath: /usr/src/app/
+    #     subPath: vector.db
+    # - name: mastra-app-storage-memory
+    #   persistentVolumeClaim:
+    #     claimName: mastra-pvc-memory
+    #   volumeMount:
+    #     mountPath: /usr/src/app/.mastra/output/
+    #     subPath: memory.db
     - name: mastra-env-config
       configMap:
         name: mastra-env-config
       volumeMount:
         mountPath: /usr/src/app/.env
         subPath: .env
-        readOnly: true
   # otlp:
   #   metrics:
   #     enabled: true

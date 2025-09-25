@@ -1,6 +1,6 @@
 {{- if .Values.mastra.additionalVolumes }}
 {{- range $volume := .Values.mastra.additionalVolumes }}
-{{- if and $volume.persistentVolumeClaim (eq $volume.persistentVolumeClaim.claimName "mastra-storage-pvc") }}
+{{- if $volume.persistentVolumeClaim }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -13,8 +13,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
-  storageClassName: "default"  # Use default storage class
+      storage: 2Gi
 {{- end }}
 {{- end }}
 {{- end }}

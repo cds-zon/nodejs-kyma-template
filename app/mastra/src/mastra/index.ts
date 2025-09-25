@@ -42,7 +42,7 @@ export const mastra = new Mastra({
   telemetry: otelConfig,
 
   storage: new LibSQLStore({
-    url: env["ConnectionStrings__mastra-db"] || "file:./mastra.db",
+    url: `file:${env.DATABASE_DIR}/mastra.db`,
   }),
 
   agents: {
