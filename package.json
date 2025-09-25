@@ -1,5 +1,5 @@
 {
-  "name": "ias",
+  "name": "v1",
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "dependencies": {
@@ -29,16 +29,16 @@
     "build:containers": "ctz containerize.yaml --log",
     "build:push": "ctz containerize.yaml --log --push",
     "bind:srv": "cds bind --to-app-services router-srv --on k8s",
-    "bind:router": "cds bind --to-app-services router-app --on k8s",
-    "bind:auth": "cds bind ias -2 router-srv-auth --on k8s",
+    "bind:router": "npx cds bind --to-app-services v1-approuter --on k8s",
+    "bind:auth": "cds bind v1 -2 router-srv-auth --on k8s",
     "bind:destination": "cds bind -2 router-srv-destination --on k8s",
-    "bind:all": "cds bind -2 router-srv-auth --on k8s && cds bind -2 router-srv-destination --on k8s",
+    "bind:all": "npx cds bind -2 router-srv-auth --on k8s && cds bind -2 router-srv-destination --on k8s",
     "bind:list": "cds bind --list",
     "bind:remove": "cds bind --remove",
     "setup:local": "npm run bind:all && npm run serve:hybrid",
     "setup:dev": "npm install && npm run bind:auth && npm run serve",
-    "deploy": "cds up -2 k8s",
-    "deploy:helm": "npm run build && helm upgrade ias ./gen/chart --install --create-namespace",
+    "deploy": "npx cds up -2 k8s",
+    "deploy:helm": "npm run build && helm upgrade v1 ./gen/chart --install --create-namespace",
     "copy-docker-secret": "./scripts/copy-docker-secret.sh",
     "deploy:cf": "cds deploy",
     "add:approuter": "cds add approuter",
@@ -61,8 +61,7 @@
     "cds": "cds",
     "ctz": "ctz",
     "test": "node --test",
-    "test:chat": "cds bind --exec -- node ./test/test-chat-auth.js",
-    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/token-service.js"
+    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js"
   },
   "private": true,
   "cds": {

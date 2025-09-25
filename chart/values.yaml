@@ -176,8 +176,7 @@ approuter:
 mastra:  
   networkSecurity:
     allowNamespaceInternal: true
-  expose:
-    enabled: false # exposed via approuter
+    enabled: false
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
@@ -209,14 +208,42 @@ mastra:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
     services__mcp-router__http__0: http://mcp-router:5000
-    OPENAI_BASE_URL: http://ai-core-proxy:3002
-    OPENAI_APIKEY: dummy-api-key
+    OPENAI_BASE_URL: http://ai-core-proxy.kyma-system.svc.cluster.local:3002
+    OPENAI_API_KEY: dummy-api-key
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otlp-dashboard:18889
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
     PORT: 8080
+  # Additional volumes for storage files and temporary .env file
+  additionalVolumes:
+    - name: mastra-storage
+      persistentVolumeClaim:
+        claimName: mastra-storage-pvc
+      volumeMount:
+        mountPath: /usr/src/app/store
+        subPath: store
+    - name: mastra-env-config
+      configMap:
+        name: mastra-env-config
+      volumeMount:
+        mountPath: /usr/src/app/.env
+        subPath: .env
+        readOnly: true
+  # otlp:
+  #   metrics:
+  #     enabled: true
+  #     # Metrics endpoint
+  #     endpoint: http://otlp-dashboard.kyma-system.svc.cluster.local:18889
+  #   traces:
+  #     enabled: true
+  #     # Traces endpoint
+  #     endpoint: http://otlp-dashboard.kyma-system.svc.cluster.local:18889
+  #   logs:
+  #     enabled: true
+  #     # Logs endpoint
+  #     endpoint: http://otlp-dashboard.kyma-system.svc.cluster.local:18889
 
-############################# Service Instances #############################
+  ############################# Service Instances #############################
 
 identity:
   serviceOfferingName: identity

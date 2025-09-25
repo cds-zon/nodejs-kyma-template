@@ -1,0 +1,20 @@
+{{- if .Values.mastra.additionalVolumes }}
+{{- range $volume := .Values.mastra.additionalVolumes }}
+{{- if and $volume.persistentVolumeClaim (eq $volume.persistentVolumeClaim.claimName "mastra-storage-pvc") }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $volume.persistentVolumeClaim.claimName }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- include "web-application.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: "default"  # Use default storage class
+{{- end }}
+{{- end }}
+{{- end }}

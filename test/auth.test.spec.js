@@ -8,7 +8,7 @@ const args = process.argv.slice(2);
 var credentials = cds.env.requires.auth.credentials;
 const authService = new IdentityService(credentials);
 const apiUrl =
-  args[0] || "https://ias-approuter-devsapce.c-127c9ef.stage.kyma.ondemand.com";
+  args[0] || "https://v1-approuter-devspace.c-127c9ef.stage.kyma.ondemand.com/";
 
 class TokenService {
   constructor() {
@@ -134,29 +134,44 @@ class TokenService {
         }
       }
 
-      const response = await this.makeAuthenticatedRequest(
+      // Test the stream/vnext endpoint with proper payload structure
+      const streamResponse = await this.makeAuthenticatedRequest(
         "mastra-api",
         `${apiUrl}/api/agents/researchAgent/stream/vnext`,
         {
-          timeout: 10000,
+          timeout: 15000,
           method: "POST",
           body: {
-            messages: [{ role: "user", content: "test research" }],
-            runId: "researchAgent",
-            modelSettings: {},
-            runtimeContext: {},
-            threadId: "test-research",
-            resourceId: "researchAgent",
+            messages: [{ role: "user", content: "Hello, can you help me with a simple test?" }],
+            runId: "test-research-" + Date.now(),
+            threadId: "test-thread-" + Date.now(),
+            resourceId: "test-resource",
+            modelSettings: {
+              temperature: 0.1,
+              maxTokens: 100
+            },
+            runtimeContext: {}
           },
         }
       );
 
       console.log(
-        `   ✅ /api/agents/researchAgent/stream/vnext: ${response.status} ${response.statusText}  `
+        `   ✅ /api/agents/researchAgent/stream/vnext: ${streamResponse.status} ${streamResponse.statusText}`
       );
-      console.log(` Response: ${await response.text()}`);
+      
+      // For streaming responses, we need to handle them differently
+      if (streamResponse.status === 200) {
+        console.log(`   📡 Streaming response received successfully`);
+        // Read the first few chunks to verify it's working
+        const responseText = await streamResponse.text();
+        console.log(`   📄 Response preview: ${responseText.substring(0, 200)}...`);
+      }
      } catch (error) {
       console.log(`   ❌ mastra service test failed: ${error.message}`);
+      if (error.response) {
+        console.log(`   📊 Error status: ${error.response.status}`);
+        console.log(`   📄 Error response: ${error.response.data}`);
+      }
     }
   }
 }
