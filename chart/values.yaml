@@ -181,14 +181,15 @@ mastra:
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
+    tag: v1
   port: 8080
   resources:
     limits:
       ephemeral-storage: 100M
-      memory: 512M
+      memory: 1Gi
     requests:
       ephemeral-storage: 100M
-      cpu: 50m
+      cpu: 100m
       memory: 512M
   runAsUser: 1000
   health:
@@ -212,8 +213,8 @@ mastra:
     OPENAI_APIKEY: dummy-api-key
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otlp-dashboard:18889
     OTEL_SERVICE_NAME: mastra
+    HOST: 0.0.0.0
     PORT: 8080
-  
 
 ############################# Service Instances #############################
 
@@ -233,6 +234,14 @@ identity:
         - https://*.{{ tpl .Values.global.domain . }}/login/callback?authType=ias
         - https://*.{{ tpl .Values.global.domain . }}/user/me
         - http://localhost:9000/login/callback?authType=ias
+        - http://localhost:4111/login/callback?authType=ias
+        - http://localhost:5001/login/callback?authType=ias
+        - http://localhost:8080/login/callback?authType=ias
+        - http://localhost:5000/login/callback?authType=ias
+        - http://localhost:8081/login/callback?authType=ias
+        - http://localhost:5002/login/callback?authType=ias
+
+
       post-logout-redirect-uris:
         - https://*.{{ tpl .Values.global.domain . }}/*/logout.html
     xsuaa-cross-consumption: true
@@ -255,26 +264,4 @@ destination:
   servicePlanName: lite
   parameters:
     version: 1.0.0
-    config:
-      HTML5Runtime_enabled: true
-      init_data:
-        instance:
-          existing_destinations_policy: update
-          destinations:
-            - Name: user-api
-              URL: ~{user-api/srv-url}
-              Authentication: NoAuthentication
-              Type: HTTP
-              ProxyType: Internet
-              HTML5.IASDependencyName: user-api
-              HTML5.DynamicDestination: true
-              HTML5.ForwardAuthToken: true
-            - Name: mastra-api
-              URL: ~{mastra-api/mastra-url}
-              Authentication: NoAuthentication
-              Type: HTTP
-              ProxyType: Internet
-              HTML5.IASDependencyName: mastra-api
-              HTML5.DynamicDestination: true
-              HTML5.ForwardAuthToken: true
 

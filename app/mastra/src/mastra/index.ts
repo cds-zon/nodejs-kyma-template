@@ -54,8 +54,8 @@ export const mastra = new Mastra({
   },
    workflows: { generateReportWorkflow, researchWorkflow },
    server: { 
-    host: env.HOST || undefined,
-    port: env.PORT ? parseInt(env.PORT) : undefined,
+    host: env.HOST || "0.0.0.0",
+    port: env.PORT ? parseInt(env.PORT) : 4111,
     cors: {
       origin: "*",
       allowMethods: ["*"],
