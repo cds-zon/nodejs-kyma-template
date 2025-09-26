@@ -209,6 +209,8 @@ mastra:
       parameters:
         credential-type: X509_GENERATED
         app-identifier: mastra
+    db:
+      serviceInstanceName: "postgres"
   env:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
@@ -221,6 +223,7 @@ mastra:
     PORT: 8080
     SYNC_URL: http://turso:8080
     DATABASE_DIR: .
+    POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
   # Additional volumes for entire app directory and temporary .env file
   additionalVolumes:
     # - name: mastra-app-storage
@@ -315,3 +318,33 @@ destination:
   parameters:
     version: 1.0.0
 
+
+# postgresql:
+#   image:
+#     repository: postgres:alpine
+#     tag: latest
+#   env:
+#     POSTGRES_PASSWORD: postgres
+#     POSTGRES_USER: postgres
+#     POSTGRES_DB: postgres
+#   resources:
+#       limits:
+#         memory: 512Mi
+#         cpu: 500m
+#       requests:
+#         memory: 256Mi
+#         cpu: 250m
+#   port: 5432
+#   additionalVolumes:
+#     - name: postgresql-data
+#       persistentVolumeClaim:
+#         claimName: postgresql-pvc
+#       volumeMount:
+#         mountPath: /var/lib/postgresql/data
+#         subPath: data
+ 
+    
+postgres:
+  serviceOfferingName: postgresql-db
+  servicePlanName: development
+   

@@ -43,7 +43,7 @@ export const mastra = new Mastra({
 
   storage: new LibSQLStore({
     url: `file:${env.DATABASE_DIR}/mastra.db`,
-  }),
+    }),
 
   agents: {
     researchAgent,

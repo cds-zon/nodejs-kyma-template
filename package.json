@@ -21,13 +21,15 @@
     "debug": "npx cds debug",
     "serve": "npm run serve:cds & npm run serve:approuter",
     "serve:cds": "npx cds serve --profile dev",
-    "serve:hybrid": "npx cds bind --exec -- npm run serve",
-    "serve:hybrid:approuter": "npx cds bind --exec -- npm run serve:approuter",
-    "serve:hybrid:cds": "npm bind --exec -- cds serve",
+    "hybrid": "npx cds bind --exec -- npm run serve",
+    "hybrid:approuter": "npx cds bind --exec -- npm run serve:approuter",
+    "hybrid:mastra": "npx cds bind --profile hybrid --exec -- npm run dev -w app/mastra",
+    "hybrid:cds": "npm bind --exec -- cds serve",
     "serve:approuter": "node node_modules/@sap/approuter/approuter.js  --workingDir chart/router --port 9000 ",
     "build": "npx cds build --production && cp -r app/router gen/chart/router",
     "build:containers": "ctz containerize.yaml --log",
     "build:push": "ctz containerize.yaml --log --push",
+    "bind:postgres": "npx cds bind db --to v1-mastra-db --on k8s",
     "bind:srv": "cds bind --to-app-services router-srv --on k8s",
     "bind:router": "npx cds bind --to-app-services v1-approuter --on k8s",
     "bind:auth": "cds bind v1 -2 router-srv-auth --on k8s",
@@ -35,7 +37,8 @@
     "bind:all": "npx cds bind -2 router-srv-auth --on k8s && cds bind -2 router-srv-destination --on k8s",
     "bind:list": "cds bind --list",
     "bind:remove": "cds bind --remove",
-    "setup:local": "npm run bind:all && npm run serve:hybrid",
+    "resolve:db": "npx cds env requires.db --resolve-bindings --profile hybrid",
+    "setup:local": "npm run bind:all && npm run hybrid",
     "setup:dev": "npm install && npm run bind:auth && npm run serve",
     "deploy": "npx cds up -2 k8s",
     "deploy:helm": "npm run build && helm upgrade v1 ./gen/chart --install --create-namespace",
@@ -64,7 +67,6 @@
     "test": "node --test",
     "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js",
     "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-test.spec.js"
-  
   },
   "private": true,
   "cds": {
@@ -129,6 +131,9 @@
               }
             }
           }
+        },
+        "db": {
+          "kind": "postgres"
         }
       },
       "destinations": true

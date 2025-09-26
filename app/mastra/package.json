@@ -25,6 +25,8 @@
     "@mastra/loggers": "^0.10.11",
     "@mastra/mcp": "^0.13.1",
     "@mastra/memory":"0.15.3" ,
+    "@mastra/pg": "^0.16.1",
+    "@sap/cds": "^9",
     "ai": "^5.0.15",
     "exa-js": "^1.8.27",
     "mastra": "0.13.2",
