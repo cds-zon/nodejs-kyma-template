@@ -1,0 +1,103 @@
+{{- if .Values.libsql.enabled }}
+{{- $libsqlValues := .Values.libsql }}
+{{- $context := dict "Values" $libsqlValues "Release" .Release "Chart" .Chart }}
+---
+# custom deployment template for libsql as we need to override the security context
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-libsql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: libsql
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    component: libsql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: libsql
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: libsql
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        component: libsql
+    spec:
+      containers:
+      - name: libsql
+        image: {{ $libsqlValues.image.registry }}/{{ $libsqlValues.image.repository }}:{{ $libsqlValues.image.tag }}
+        ports:
+        - containerPort: {{ $libsqlValues.port }}
+          name: http
+        - containerPort: 5001
+          name: sync
+        env:
+        {{- range $key, $value := $libsqlValues.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        volumeMounts:
+        {{- range $volume := $libsqlValues.additionalVolumes }}
+        - name: {{ $volume.name | quote }}
+          {{- toYaml $volume.volumeMount | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml $libsqlValues.resources | nindent 10 }}
+        # Custom security context for LibSQL to allow root user
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: false
+          runAsNonRoot: false
+          runAsUser: 0
+          runAsGroup: 0
+          readOnlyRootFilesystem: false
+          capabilities:
+            add:
+              - CHOWN
+              - FOWNER
+              - SETUID
+              - SETGID
+      volumes:
+      {{- range $volume := $libsqlValues.additionalVolumes }}
+      {{- if $volume.persistentVolumeClaim }}
+      - name: {{ $volume.name | quote }}
+        persistentVolumeClaim:
+          claimName: {{ $volume.persistentVolumeClaim.claimName }}
+      {{- else if $volume.secret }}
+      - name: {{ $volume.name | quote }}
+        secret:
+          secretName: {{ $volume.secret.secretName }}
+      {{- end }}
+      {{- end }}
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-libsql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: libsql
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    component: libsql
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.libsql.port }}
+    targetPort: {{ .Values.libsql.port }}
+    protocol: TCP
+    name: http
+  - port: 5001
+    targetPort: 5001
+    protocol: TCP
+    name: sync
+  selector:
+    app.kubernetes.io/name: libsql
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+{{- end }}

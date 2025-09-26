@@ -25,6 +25,3 @@ dependencies:
   - name: service-instance
     alias: postgres
     version: ">0.0.0"
-  # - name: web-application
-  #   alias: postgresql
-  #   version: ">0.0.0"

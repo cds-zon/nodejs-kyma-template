@@ -89,6 +89,33 @@
         "IfNotPresent",
         "Never"
       ]
+    },
+    "runAsUser": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "runAsNonRoot": {
+      "type": "boolean"
+    },
+    "allowPrivilegeEscalation": {
+      "type": "boolean"
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drop": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

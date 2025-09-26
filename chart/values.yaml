@@ -221,9 +221,14 @@ mastra:
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
     PORT: 8080
-    SYNC_URL: http://turso:8080
+    SYNC_URL: "http://{{ .Release.Name }}-libsql:8080"
     DATABASE_DIR: .
-    POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
+    # # # # POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
+    pg: "false"
+    # for now we only use remote libsql for sync vector
+    # LIBSQL_DATABASE_URL: "libsql://v1-libsql:8080"
+    # to be setup with ias bound credentials
+    # LIBSQL_AUTH_TOKEN: ""
   # Additional volumes for entire app directory and temporary .env file
   additionalVolumes:
     # - name: mastra-app-storage
@@ -347,4 +352,42 @@ destination:
 postgres:
   serviceOfferingName: postgresql-db
   servicePlanName: development
+
+# libSQL server configuration (self-hosted)
+libsql:
+  enabled: true
+  image:
+    repository: tursodatabase/libsql-server
+    tag: latest
+    registry: ghcr.io
+  networkSecurity:
+    enabled: true
+    allowNamespaceInternal: true
+    additionalPorts: [5001]
+  port: 8080 
+  # Custom deployment template handles security context
+  testConnection: true
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
+  env:
+    SQLD_NODE: "primary"
+    # SQLD_AUTH_JWT_KEY_FILE: "/home/.ssh/libsql.pub"
+  additionalVolumes:
+    - name: libsql-data
+      persistentVolumeClaim:
+        claimName: libsql-pvc
+      volumeMount:
+        mountPath: /var/lib/sqld
+        subPath: data
+    - name: libsql-keys
+      secret:
+        secretName: libsql-keys
+      volumeMount:
+        mountPath: /home/.ssh/libsql.pub
+        subPath: libsql.pub
    
