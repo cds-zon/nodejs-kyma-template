@@ -4,74 +4,99 @@ import { fastembed } from "@mastra/fastembed";
 import {env} from "process";
 import {PostgresStore, PgVector} from "@mastra/pg";
 import { fs } from "@sap/cds/lib/utils/cds-utils";
-const url=import.meta.url;
-console.log(__dirname,url)
 
-const services = JSON.parse(env.VCAP_SERVICES || "{}");
-const bindingFile="/bindings/db/credentials"
-const binding=fs.existsSync(bindingFile) ? JSON.parse(fs.readFileSync(bindingFile, "utf8")) : null;
-const pgUrl=  env.pg && (binding?.uri || services["postgresql-db"]?.[0]?.credentials?.uri);
-console.log("pgUrl", pgUrl);
+
+
 export const memory = new Memory({
     embedder: fastembed,
     // Optional storage configuration - libsql will be used by default
-    storage: pgUrl ?
-        new PostgresStore({
-            connectionString: pgUrl
-        } )
-        :
-     new LibSQLStore({
-        url: `file:${env.DATABASE_DIR}/memory.db`,
-        
-        // url:  env["ConnectionStrings__mastra-memory"] || "file:mastra_memory.db?mode=memory&cache=shared",
-    }),
-
+    storage: getStorage("memory") ,
     // Optional vector database for semantic search
-    vector:
-     pgUrl ?
-        new PgVector({
-            connectionString: pgUrl
-        } )
-        :
-     new LibSQLVector({
-        connectionUrl: `file:${env.DATABASE_DIR}/vector.db`
-    }),
-
+    vector:getVector("vector"),
+   
     // Memory configuration options
     options: {
         // Number of recent messages to include
-        lastMessages: 20,
-        
+        lastMessages: 20, 
         // Semantic search configuration
         semanticRecall: {
-            
-            topK: 3, // Number of similar messages to retrieve
-            messageRange: {
-                // Messages to include around each result
-                before: 2,
-                after: 1,
+            topK: 5,
+            messageRange: 2,
+            indexConfig: {
+              type: 'hnsw',  
+              hnsw: {
+                m: 16,// Number of bi-directional links (default: 16)
+                efConstruction: 64,// Size of candidate list during construction (default: 64
+              },         // Use HNSW for better performance
+              metric: 'dotproduct',   // Best for OpenAI embeddings  
+              
             },
-        },
-
-//         // Working memory configuration
+          }, 
         workingMemory: {
           enabled: true,
-
-//             template: `
-// # User
-// - First Name:
-// - Last Name:
-// `,
+          scope: "resource",
         },
 
-        // Thread configuration
         threads: {
-            generateTitle: true, // Enable title generation using agent's model
-            // Or use a different model for title generation
-            // generateTitle: {
-            //   model: openai("gpt-4.1-nano"), // Use cheaper model for titles
-            //   instructions: "Generate a concise title based on the initial user message.", // Custom instructions for title
-            // },
+            generateTitle: true, 
         },
     },
 });
+
+
+
+
+
+function getStorageParameters() {
+    const services = JSON.parse(env.VCAP_SERVICES || "{}");
+    const bindingFile="/bindings/db/credentials"
+    const binding=fs.existsSync(bindingFile) ? JSON.parse(fs.readFileSync(bindingFile, "utf8")) : null;
+    const pgUrl=  env.pg === "true" ? (binding?.uri || services["postgresql-db"]?.[0]?.credentials?.uri) : null;
+    const libsqlUrl = env.LIBSQL_DATABASE_URL;
+    const libsqlToken = env.LIBSQL_AUTH_TOKEN;
+    console.log("storage parameters", pgUrl, libsqlUrl);
+
+    return {
+        pgUrl,
+        libsqlUrl,
+        libsqlToken
+    }
+}
+
+
+export function getStorage(dbName: string) {
+    const {pgUrl, libsqlUrl, libsqlToken} = getStorageParameters();
+
+    return pgUrl ?
+        new PostgresStore({
+            connectionString: pgUrl
+        } )
+        : libsqlUrl ?
+        new LibSQLStore({
+            url: libsqlUrl,
+            authToken: libsqlToken || undefined
+        })
+        :
+        new LibSQLStore({
+            url: `file:${env.DATABASE_DIR}/${dbName}.db`,
+        })
+}
+
+function getVector(dbName: string) {
+    const {pgUrl, libsqlUrl, libsqlToken} = getStorageParameters();
+
+    return pgUrl ?
+        new PgVector({
+            connectionString: pgUrl
+        } )
+        : libsqlUrl ?
+        new LibSQLVector({
+            connectionUrl: libsqlUrl,
+            authToken: libsqlToken || undefined
+        })
+        :
+        new LibSQLVector({
+            connectionUrl: `file:${env.DATABASE_DIR}/${dbName}.db`,
+            syncUrl: env.SYNC_URL 
+        })
+}

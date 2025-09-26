@@ -9,7 +9,7 @@ import { webSummarizationAgent } from './agents/webSummarizationAgent';
 import { generateReportWorkflow } from './workflows/generateReportWorkflow';
 import { env } from 'process';
 import {MessageListInput} from "@mastra/core/agent/message-list";
-
+import { getStorage } from './memory';
 
 function parseHeaders(headerString: string): Record<string, string> {
   return headerString.split(",").reduce((acc, header) => {
@@ -39,12 +39,8 @@ const otelConfig: OtelConfig = {
 
 
 export const mastra = new Mastra({
-  telemetry: otelConfig,
-
-  storage: new LibSQLStore({
-    url: `file:${env.DATABASE_DIR}/mastra.db`,
-    }),
-
+  telemetry: otelConfig, 
+  storage: getStorage("mastra"), 
   agents: {
     researchAgent,
     reportAgent,
@@ -61,6 +57,7 @@ export const mastra = new Mastra({
       allowMethods: ["*"],
       allowHeaders: ["*"]
     },
+    
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
@@ -69,7 +66,13 @@ export const mastra = new Mastra({
           return async c=> {
             const {messages} = await c.req.json< {messages:MessageListInput}>() ;
             const stream=await mastra.getAgent("researchAgent").streamVNext(messages,{
-              format:"aisdk"
+              format:"aisdk",
+              savePerStep:true,
+              memory: {
+                resource: c.req.header("X-Resource-Id") || "default",
+                thread: c.req.header("X-Thread-Id") || "default",
+               
+              }
             });
 
             return stream.toUIMessageStreamResponse();
