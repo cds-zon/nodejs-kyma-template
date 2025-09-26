@@ -221,9 +221,15 @@ mastra:
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
     PORT: 8080
-    SYNC_URL: http://turso:8080
     DATABASE_DIR: .
-    POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
+    # # # # POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
+    pg: "false"
+    # for now we only use remote libsql for sync vector
+    # LIBSQL_DATABASE_URL: "libsql://v1-libsql:8080"
+    # to be setup with ias bound credentials
+    # LIBSQL_AUTH_TOKEN: ""
+    # SYNC_URL: "http://{{ .Release.Name }}-libsql:8080"
+
   # Additional volumes for entire app directory and temporary .env file
   additionalVolumes:
     # - name: mastra-app-storage
@@ -318,31 +324,6 @@ destination:
   parameters:
     version: 1.0.0
 
-
-# postgresql:
-#   image:
-#     repository: postgres:alpine
-#     tag: latest
-#   env:
-#     POSTGRES_PASSWORD: postgres
-#     POSTGRES_USER: postgres
-#     POSTGRES_DB: postgres
-#   resources:
-#       limits:
-#         memory: 512Mi
-#         cpu: 500m
-#       requests:
-#         memory: 256Mi
-#         cpu: 250m
-#   port: 5432
-#   additionalVolumes:
-#     - name: postgresql-data
-#       persistentVolumeClaim:
-#         claimName: postgresql-pvc
-#       volumeMount:
-#         mountPath: /var/lib/postgresql/data
-#         subPath: data
- 
     
 postgres:
   serviceOfferingName: postgresql-db
