@@ -2,6 +2,7 @@
   "name": "v1",
   "version": "1.0.0",
   "description": "A simple CAP project.",
+  "type": "module",
   "dependencies": {
     "@sap/approuter": "^20.7.1",
     "@sap/cds": "^9",
@@ -66,7 +67,7 @@
     "ctz": "ctz",
     "test": "node --test",
     "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js",
-    "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-test.spec.js"
+    "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-persistence.test.spec.js"
   },
   "private": true,
   "cds": {
