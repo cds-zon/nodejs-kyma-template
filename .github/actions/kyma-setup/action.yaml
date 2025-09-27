@@ -23,7 +23,7 @@ runs:
       shell: bash
     - run: apt-get install software-properties-common -y
       shell: bash
-    - run: apt-get install curl ca-certificates -y
+    - run: apt-get install curl ca-certificates unzip -y
       shell: bash
     - run: apt install sudo
       shell: bash
@@ -44,6 +44,14 @@ runs:
     - run: apt-get install kubectl -y
       shell: bash
     - run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      shell: bash
+    - run: |
+        # Install kubectl-oidc_login plugin for OIDC authentication
+        curl -LO "https://github.com/int128/kubelogin/releases/download/v1.29.0/kubelogin_linux_amd64.zip"
+        unzip kubelogin_linux_amd64.zip
+        sudo mv kubelogin /usr/local/bin/kubectl-oidc_login
+        chmod +x /usr/local/bin/kubectl-oidc_login
+        rm kubelogin_linux_amd64.zip
       shell: bash
     - run: npm install -g ctz
       shell: bash
