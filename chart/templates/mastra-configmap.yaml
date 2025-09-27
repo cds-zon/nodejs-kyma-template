@@ -1,6 +1,6 @@
 {{- if .Values.mastra.additionalVolumes }}
 {{- range $volume := .Values.mastra.additionalVolumes }}
-{{- if and $volume.configMap (eq $volume.configMap.name "mastra-env-config") }}
+{{- if and $volume.configMap (contains $volume.configMap.name "mastra-env-config") }}
 ---
 apiVersion: v1
 kind: ConfigMap
