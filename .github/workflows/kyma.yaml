@@ -97,8 +97,10 @@ jobs:
       - run: npx cds build --production
         if: inputs.containers == false
 
-      - run: helm upgrade $RELEASE_VERSION ./gen/chart --install --create-namespace --set global.image.tag=$RELEASE_VERSION
+      - run: helm upgrade $RELEASE_VERSION ./gen/chart --install --namespace devspace --set global.image.tag=$RELEASE_VERSION
         if: inputs.helm == true
+        env:
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
       - uses: ./.github/actions/kyma-info
         if: always()
