@@ -33,7 +33,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
       - run: npm install --omit=optional
-      - run: npm run deploy:versioned
+      - run: ./.github/actions/version/set-release-version.sh
+      - run: npm run build:containers -- --push && npm run deploy:helm  --set global.image.tag=$(jq -r '.name' package.json)
 
       - uses: ./.github/actions/kyma-info
         if: always()
