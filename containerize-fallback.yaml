@@ -1,0 +1,42 @@
+_schema-version: '1.0'
+repository: scai-dev.common.repositories.cloud.sap
+tag: v2
+before-all:
+  - export TARGETPLATFORM=linux/amd64
+  - npx cds build --production
+  - cp -r app/router gen/chart/router
+
+modules:
+  - name: router/api
+    build-parameters:
+      commands:
+        # Try buildx first, fallback to regular docker build
+        - |
+          if docker buildx version >/dev/null 2>&1; then
+            echo "Using Docker Buildx"
+            docker buildx build --platform linux/amd64 -t router/api:v2 -f Dockerfile . --load
+          else
+            echo "Docker Buildx not available, using regular docker build"
+            docker build -t router/api:v2 -f Dockerfile .
+          fi
+
+  - name: agents/mastra
+    build-parameters:
+      commands:
+        # Try buildx first, fallback to regular docker build
+        - |
+          if docker buildx version >/dev/null 2>&1; then
+            echo "Using Docker Buildx"
+            docker buildx build --platform linux/amd64 -t agents/mastra:v2 -f app/mastra/Dockerfile --target dev . --load
+          else
+            echo "Docker Buildx not available, using regular docker build"
+            docker build -t agents/mastra:v2 -f app/mastra/Dockerfile --target dev .
+          fi
+
+  - name: v1-approuter
+    build-parameters:
+      commands:
+        - cp -r app/router gen/chart/router
+        - docker pull sapse/approuter:20.7.0
+        - docker tag sapse/approuter:20.7.0 v1-approuter:v2
+   

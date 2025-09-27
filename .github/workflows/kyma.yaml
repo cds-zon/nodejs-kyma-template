@@ -20,7 +20,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     container:
-      image: public.int.repositories.cloud.sap/ubuntu:24.04
+      image: sapmachine:ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

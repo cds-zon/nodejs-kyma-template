@@ -39,6 +39,18 @@ runs:
       shell: bash
     - run: apt-get install docker.io -y
       shell: bash
+    - run: docker --version
+      shell: bash
+    - name: Set up Docker Buildx
+      shell: bash
+      run: |
+        # Install Docker Buildx plugin
+        mkdir -p ~/.docker/cli-plugins/
+        curl -SL https://github.com/docker/buildx/releases/download/v0.12.1/buildx-v0.12.1.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+        chmod a+x ~/.docker/cli-plugins/docker-buildx
+        # Create and use buildx builder
+        docker buildx create --name mybuilder --use --bootstrap
+        docker buildx inspect --bootstrap
     - run: (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.31.0/pack-v0.31.0-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack)
       shell: bash
     - run: apt-get install kubectl -y
