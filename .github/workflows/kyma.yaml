@@ -34,7 +34,7 @@ jobs:
           kube-config: ${{ secrets.KUBE_CONFIG }}
       - run: npm install --omit=optional
       - run: ./.github/actions/version/set-release-version.sh
-      - run: npm run build:containers -- --push && npm run deploy:helm  --set global.image.tag=$(jq -r '.name' package.json)
+      - run: npm run build:containers -- --push && helm upgrade $(jq -r '.name' package.json) ./gen/chart --install --create-namespace --set global.image.tag=$(jq -r '.name' package.json)
 
       - uses: ./.github/actions/kyma-info
         if: always()
