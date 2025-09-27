@@ -181,7 +181,6 @@ mastra:
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
-    tag: v2
   hpa:
     maxReplicas: 1
     minReplicas: 1
