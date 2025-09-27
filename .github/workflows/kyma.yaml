@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
       - run: npm clean-install
-      - run: npx cds up --to k8s
+      - run: npm run deploy:versioned
 
       - uses: ./.github/actions/kyma-info
         if: always()
