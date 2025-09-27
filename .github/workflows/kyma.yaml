@@ -2,6 +2,17 @@ name: Kyma
 on:
   workflow_call: 
   workflow_dispatch:
+    inputs: 
+      containers:
+        description: 'If true, build and push container images'
+        type: boolean
+        required: false
+        default: true
+      helm:
+        description: 'If true, deploy or upgrade helm chart'
+        type: boolean
+        required: false
+        default: true
   push:
     branches:
       - main
@@ -32,9 +43,22 @@ jobs:
           user: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
+          
       - run: npm install --omit=optional
       - run: ./.github/actions/version/set-release-version.sh
-      - run: npm run build:containers -- --push && helm upgrade $(jq -r '.name' package.json) ./gen/chart --install --create-namespace --set global.image.tag=$(jq -r '.name' package.json)
+        
+      - run: release=$(jq -r '.name' package.json) >> $GITHUB_ENV
+      - run: echo "Release version set to $release"
+        
+      - run: npm run build:containers -- --push 
+        if: inputs.containers == true
+        
+      # if we did not build containers, we need to build the cds project for helm deployment
+      - run: npx cds build --production
+        if: inputs.containers == false
+
+      - run: helm upgrade $release ./gen/chart --install --create-namespace --set global.image.tag=$release
+        if: inputs.helm == true
 
       - uses: ./.github/actions/kyma-info
         if: always()
