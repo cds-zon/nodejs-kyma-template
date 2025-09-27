@@ -47,6 +47,7 @@ jobs:
       - run: npm install --omit=optional
       
       - name: Set release version
+        shell: bash
         run: |
           # Get current git reference (branch, tag, or commit)
           if [ -n "$GITHUB_REF" ]; then
