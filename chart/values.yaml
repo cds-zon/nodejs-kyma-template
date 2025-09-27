@@ -1,5 +1,8 @@
 # yaml-language-server: $schema=./values.schema.json
 
+# Version will be set dynamically from package.json name field during deployment
+version: "v1"
+
 global:
   domain: c-127c9ef.stage.kyma.ondemand.com
   imagePullPolicy: Always
@@ -7,7 +10,8 @@ global:
     name: docker-registry
   image:
     registry: scai-dev.common.repositories.cloud.sap/router
-    tag: v2
+    # Tag will be dynamically set from package.json during deployment
+    tag: "{{ .Values.version | default \"v1\" }}"
 srv:
   image:
     repository: api
@@ -181,6 +185,7 @@ mastra:
   image:
     registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
+    tag: "{{ .Values.version | default \"v1\" }}"
   hpa:
     maxReplicas: 1
     minReplicas: 1

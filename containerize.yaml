@@ -1,6 +1,7 @@
 _schema-version: '1.0'
 repository: scai-dev.common.repositories.cloud.sap
-tag: v2
+# Tag will be dynamically set from package.json name field
+tag: "$(jq -r '.name' package.json)"
 before-all:
   - export TARGETPLATFORM=linux/amd64
   - npx cds build --production
@@ -10,17 +11,20 @@ modules:
   - name: router/api
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t router/api:v2 -f Dockerfile . --load
+        - export VERSION=$(jq -r '.name' package.json)
+        - docker buildx build --platform linux/amd64 -t router/api:$VERSION -f Dockerfile . --load
 
   - name: agents/mastra
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t agents/mastra:v2 -f app/mastra/Dockerfile --target dev . --load
+        - export VERSION=$(jq -r '.name' package.json)
+        - docker buildx build --platform linux/amd64 -t agents/mastra:$VERSION -f app/mastra/Dockerfile --target dev . --load
 
   - name: v1-approuter
     build-parameters:
       commands:
         - cp -r app/router gen/chart/router
         - docker pull sapse/approuter:20.7.0
-        - docker tag sapse/approuter:20.7.0 v1-approuter:v2
+        - export VERSION=$(jq -r '.name' package.json)
+        - docker tag sapse/approuter:20.7.0 v1-approuter:$VERSION
    

@@ -39,6 +39,8 @@ runs:
       shell: bash
     - run: apt-get install jq -y
       shell: bash
+    - run: apt-get install yq -y
+      shell: bash
     - run: apt-get install docker.io -y
       shell: bash
     - run: docker --version
