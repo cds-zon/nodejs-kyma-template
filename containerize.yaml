@@ -1,34 +1,32 @@
 _schema-version: '1.0'
 repository: scai-dev.common.repositories.cloud.sap
-# Tag will be dynamically set from package.json name field
-tag: "$(jq -r '.name' package.json)"
+# Tag will be set from RELEASE_VERSION environment variable
+tag: "${RELEASE_VERSION:-v1}"
 before-all:
   - export TARGETPLATFORM=linux/amd64
   - npx cds build --production
   - cp -r app/router gen/chart/router
-  - VERSION=$(jq -r '.name' package.json)
 
 after-all:
-  - echo "Build complete, updating tag in chart/values.yaml $VERSION | $(jq -r '.name' package.json)"
-  - yq -i '.global.image.tag = $(jq -r '.name' package.json)' chart/values.yaml
+  - echo "Build complete with release version: ${RELEASE_VERSION:-v1}"
 
 modules:
   - name: router/api
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t router/api:$(jq -r '.name' package.json) -f Dockerfile . --load
+        - docker buildx build --platform linux/amd64 -t router/api:${RELEASE_VERSION:-v1} -f Dockerfile . --load
 
   - name: agents/mastra
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t agents/mastra:$(jq -r '.name' package.json) -f app/mastra/Dockerfile --target dev . --load
+        - docker buildx build --platform linux/amd64 -t agents/mastra:${RELEASE_VERSION:-v1} -f app/mastra/Dockerfile --target dev . --load
 
   - name: router/approuter
     build-parameters:
       commands:
         - cp -r app/router gen/chart/router
         - docker pull sapse/approuter:20.7.0
-        - docker tag sapse/approuter:20.7.0 router/approuter:$(jq -r '.name' package.json)
+        - docker tag sapse/approuter:20.7.0 router/approuter:${RELEASE_VERSION:-v1}
   - name: v1-approuter
     build-parameters:
       buildpack:

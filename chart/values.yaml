@@ -14,7 +14,7 @@ global:
 srv:
   image:
     repository: api
-    
+
   networkSecurity:
     allowNamespaceInternal: true
   bindings:
@@ -79,7 +79,7 @@ approuter:
       path: /
     readiness:
       path: /
- 
+
   # Environment variables for approuter configuration
   env:
     # TENANT_HOST_PATTERN: "^(.*)-{{ tpl .Values.global.domain . }}"
@@ -184,7 +184,7 @@ mastra:
     enabled: false
   image:
     repository: mastra
-    
+
   hpa:
     maxReplicas: 1
     minReplicas: 1
@@ -337,4 +337,3 @@ postgres:
   servicePlanName: development
   #prevent creation of a new instance for each release
   fullnameOverride: v1-postgres
-  
