@@ -212,9 +212,9 @@ mastra:
       parameters:
         credential-type: X509_GENERATED
         app-identifier: mastra
-    db:
-      serviceInstanceName: "postgres"
-      externalName: "v1-postgres"
+    # db:
+    #   serviceInstanceName: "postgres"
+    #   externalName: "v1-postgres"
   env:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
