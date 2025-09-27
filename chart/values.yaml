@@ -1,16 +1,20 @@
 # yaml-language-server: $schema=./values.schema.json
 
+# Version will be set dynamically from package.json name field during deployment
+
 global:
   domain: c-127c9ef.stage.kyma.ondemand.com
   imagePullPolicy: Always
   imagePullSecret:
     name: docker-registry
   image:
-    registry: scai-dev.common.repositories.cloud.sap/router
-    tag: v1
+    registry: scai-dev.common.repositories.cloud.sap
+    # Tag will be dynamically set from package.json during deployment
+    tag: v2
 srv:
   image:
-    repository: api
+    repository: router/api
+
   networkSecurity:
     allowNamespaceInternal: true
   bindings:
@@ -179,9 +183,8 @@ mastra:
     allowNamespaceInternal: true
     enabled: false
   image:
-    registry: scai-dev.common.repositories.cloud.sap/agents
-    repository: mastra
-    tag: v2
+    repository: agents/mastra
+
   hpa:
     maxReplicas: 1
     minReplicas: 1
@@ -209,8 +212,9 @@ mastra:
       parameters:
         credential-type: X509_GENERATED
         app-identifier: mastra
-    db:
-      serviceInstanceName: "postgres"
+    # db:
+    #   serviceInstanceName: "postgres"
+    #   externalName: "v1-postgres"
   env:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
@@ -257,7 +261,7 @@ mastra:
     #     subPath: memory.db
     - name: mastra-env-config
       configMap:
-        name: mastra-env-config
+        name: "{{ .Release.Name }}-mastra-env-config"
       volumeMount:
         mountPath: /usr/src/app/.env
         subPath: .env
@@ -280,8 +284,10 @@ mastra:
 identity:
   serviceOfferingName: identity
   servicePlanName: application
+  externalName: "identity-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
   parameters:
-    displayName: "Chat Service ({{ .Release.Namespace }})"
+    displayName: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
+    display-name: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
     home-page: https://{{ .Release.Namespace }}.{{ .Values.global.domain }}
     multi-tenant: true
     oauth2-configuration:
@@ -308,7 +314,6 @@ identity:
         type: public
       - name: mastra-api
         type: public
-    display-name: v1
 
 backendDestinations:
   user-api:
@@ -323,9 +328,12 @@ backendDestinations:
 destination:
   serviceOfferingName: destination
   servicePlanName: lite
+  externalName: "destination-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
   parameters:
     version: 1.0.0
 
 postgres:
   serviceOfferingName: postgresql-db
   servicePlanName: development
+  #prevent creation of a new instance for each release
+  fullnameOverride: v1-postgres

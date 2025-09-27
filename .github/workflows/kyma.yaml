@@ -2,6 +2,17 @@ name: Kyma
 on:
   workflow_call: 
   workflow_dispatch:
+    inputs: 
+      containers:
+        description: 'If true, build and push container images'
+        type: boolean
+        required: false
+        default: true
+      helm:
+        description: 'If true, deploy or upgrade helm chart'
+        type: boolean
+        required: false
+        default: true
   push:
     branches:
       - main
@@ -32,8 +43,65 @@ jobs:
           user: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
-      - run: npm clean-install
-      - run: npx cds up --to k8s
+          
+      - run: npm install --omit=optional
+      
+      - name: Set release version
+        shell: bash
+        run: |
+          # Get current git reference (branch, tag, or commit)
+          if [ -n "$GITHUB_REF" ]; then
+              REF="$GITHUB_REF"
+          else
+              REF="refs/heads/$(git rev-parse --abbrev-ref HEAD)"
+          fi
+          
+          echo "Git reference: $REF"
+          
+          # Determine version based on ref type
+          if [[ "$REF" == refs/tags/* ]]; then
+              VERSION=$(echo "$REF" | sed 's|refs/tags/||' | sed 's/\./-/g')
+              echo "Tag detected: $VERSION"
+          elif [[ "$REF" == refs/heads/release/* ]]; then
+              VERSION=$(echo "$REF" | sed 's|refs/heads/release/||' | sed 's/\./-/g')
+              echo "Release branch detected: $VERSION"
+          elif [[ "$REF" == refs/heads/feature/* ]]; then
+              VERSION=$(echo "$REF" | sed 's|refs/heads/feature/||' | sed 's/\./-/g')
+              echo "Feature branch detected: $VERSION"
+          elif [[ "$REF" == refs/heads/main ]] || [[ "$REF" == refs/heads/master ]]; then
+              VERSION="main"
+              echo "Main branch detected: $VERSION"
+          else
+              VERSION=$(echo "$REF" | sed 's|refs/heads/||' | sed 's|/|-|g' | sed 's/\./-/g')
+              echo "Other ref detected: $VERSION"
+          fi
+          
+          # Sanitize version name for Kubernetes
+          VERSION=$(echo "$VERSION" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+          
+          # Ensure version doesn't exceed Kubernetes name limits (63 characters)
+          if [ ${#VERSION} -gt 63 ]; then
+              VERSION="${VERSION:0:63}"
+              VERSION=$(echo "$VERSION" | sed 's/-$//g')
+          fi
+          
+          echo "Final sanitized version: $VERSION"
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Release version set to: $VERSION"
+        
+      - run: npm run build:containers -- --push 
+        if: inputs.containers == true
+        env:
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+        
+      # if we did not build containers, we need to build the cds project for helm deployment
+      - run: npx cds build --production
+        if: inputs.containers == false
+
+      - run: helm upgrade $RELEASE_VERSION ./gen/chart --install --namespace devspace --set global.image.tag=$RELEASE_VERSION
+        if: inputs.helm == true
+        env:
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
       - uses: ./.github/actions/kyma-info
         if: always()

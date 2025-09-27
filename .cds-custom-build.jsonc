@@ -1,0 +1,54 @@
+{// this file is currently not used, but it saved as reference for future use
+
+    //build tasks
+    "build": {
+    "target": "gen",
+    "tasks": [
+     {
+      "src": "srv",
+      "for": "nodejs",
+      "options": {
+       "model": [
+        "db",
+        "srv",
+        "app",
+        "@sap/cds/srv/outbox"
+       ]
+      }
+     },
+     {
+      "src": ".",
+      "for": "helm",
+      "options": {
+       "model": [
+        "db",
+        "srv",
+        "app",
+        "@sap/cds/srv/outbox",
+        "."
+       ]
+      }
+     },
+     {
+      "src": "app/mastra",
+      "for": "nodejs",
+      "dest": "app/mastra",
+      "options": {
+       "model": [
+        "db",
+        "srv",
+        "app",
+        "@sap/cds/srv/outbox",
+        "app/mastra/src/mastra"
+       ]
+      }
+     }
+    ]
+   },
+  
+   
+//ts imports 
+ "imports": {
+  "#cds-models/*": "./@cds-models/*/index.js"
+ }
+}

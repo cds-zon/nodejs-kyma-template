@@ -2,3 +2,4 @@ node_modules/
 .cdsrc-private.json
 .mastra/
 .env
+**/node_modules/
