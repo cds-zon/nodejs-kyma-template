@@ -19,14 +19,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Cache apt packages
-      uses: actions/cache@v4
-      with:
-        path: /var/cache/apt
-        key: ${{ runner.os }}-apt-${{ hashFiles('/etc/apt/sources.list.d/**') }}
-        restore-keys: |
-          ${{ runner.os }}-apt-
-          
     - run: apt-get update -y
       shell: bash
     - run: apt-get install software-properties-common -y
@@ -67,30 +59,8 @@ runs:
       shell: bash
     - run: apt-get install kubectl -y
       shell: bash
-    - name: Cache Helm binary
-      uses: actions/cache@v4
-      with:
-        path: /usr/local/bin/helm
-        key: ${{ runner.os }}-helm-v3.19.0
-        restore-keys: |
-          ${{ runner.os }}-helm-
-          
-    - run: |
-        if [ ! -f "/usr/local/bin/helm" ]; then
-          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-        else
-          echo "Helm already cached"
-        fi
+    - run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       shell: bash
-      
-    - name: Cache ctz binary
-      uses: actions/cache@v4
-      with:
-        path: ~/.npm/_npx
-        key: ${{ runner.os }}-npx-ctz-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npx-ctz-
-          
     - run: npm install -g ctz
       shell: bash
     - shell: bash
