@@ -22,7 +22,7 @@
       "csrfProtection": false,
       "authenticationType": "ias",
       "service": "sap-approuter-userapi"
-    },  
+    },
     {
       "source": "^/favicon\\.(ico|svg|png|gif)$",
       "target": "/favicon.$1",
