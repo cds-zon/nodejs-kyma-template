@@ -32,7 +32,7 @@ jobs:
           user: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
-      - run: npm ci --ignore-optional
+      - run: npm ci --omit=optional
       - run: npm run deploy:versioned
 
       - uses: ./.github/actions/kyma-info
