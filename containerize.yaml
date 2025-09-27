@@ -14,12 +14,12 @@ modules:
   - name: router/api
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t router/api:${RELEASE_VERSION:-v1} -f Dockerfile . --load
+        - docker buildx build --platform linux/amd64 -t router/api:${RELEASE_VERSION:-v1} -f Dockerfile . --load --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max
 
   - name: agents/mastra
     build-parameters:
       commands:
-        - docker buildx build --platform linux/amd64 -t agents/mastra:${RELEASE_VERSION:-v1} -f app/mastra/Dockerfile --target dev . --load
+        - docker buildx build --platform linux/amd64 -t agents/mastra:${RELEASE_VERSION:-v1} -f app/mastra/Dockerfile --target dev . --load --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max
 
   - name: router/approuter
     build-parameters:
