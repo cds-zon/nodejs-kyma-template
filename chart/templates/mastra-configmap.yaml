@@ -5,7 +5,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $volume.configMap.name }}
+  name: {{ $.Release.Name }}-mastra-env-config
   namespace: {{ $.Release.Namespace }}
   labels: {{- include "web-application.labels" $ | nindent 4 }}
 data:
