@@ -19,6 +19,8 @@ srv:
       parameters:
         credential-type: X509_GENERATED
         app-identifier: srv
+    destination:
+      serviceInstanceName: destination
     # destination:
     #   serviceInstanceName: destination
   env:
@@ -83,39 +85,39 @@ approuter:
     OTEL_SERVICE_NAME: approuter
     OTEL_PROPAGATORS: tracecontext,baggage
     CORS: |
-          [
-            {
-              "allowedOrigin":[
-                                {
-                                    "host":"{{ tpl .Values.global.domain . }}",
-                                    "protocol":"https"
-                                }
-                              ],
-              "allowedCredentials": true,
-              "hostPattern":"^.*\\.{{ tpl .Values.global.domain . }}$",
-              "uriPattern": "^/.*$",
-              "allowedHeaders": [
-                "Authorization",
-                "Content-Type",
-                "approuter-authorization",
-                "Cache-Control",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers",
-                "x-approuter-authorization",
-                "*"
-              ],
-              "allowedMethods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-              ]
-            }
+      [
+        {
+          "allowedOrigin":[
+                            {
+                                "host":"{{ tpl .Values.global.domain . }}",
+                                "protocol":"https"
+                            }
+                          ],
+          "allowedCredentials": true,
+          "hostPattern":"^.*\\.{{ tpl .Values.global.domain . }}$",
+          "uriPattern": "^/.*$",
+          "allowedHeaders": [
+            "Authorization",
+            "Content-Type",
+            "approuter-authorization",
+            "Cache-Control",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "x-approuter-authorization",
+            "*"
+          ],
+          "allowedMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTIONS"
           ]
+        }
+      ]
     # Don't set XS_APP_CONFIG - let approuter use default /app/xs-app.json
-    
+
     # CORS configuration using corsPolicy
   expose:
     corsPolicy:
@@ -171,9 +173,8 @@ approuter:
     - configMapRef:
         name: "{{ .Release.Name }}-approuter-configmap"
 
-
 ############################# Application itself - to be replaced with actual application #############################
-mastra:  
+mastra:
   networkSecurity:
     allowNamespaceInternal: true
     enabled: false
@@ -184,7 +185,6 @@ mastra:
   hpa:
     maxReplicas: 1
     minReplicas: 1
-
 
   port: 8080
   resources:
@@ -230,7 +230,7 @@ mastra:
     # LIBSQL_AUTH_TOKEN: ""
     # SYNC_URL: "http://{{ .Release.Name }}-libsql:8080"
 
-  # Additional volumes for entire app directory and temporary .env file
+    # Additional volumes for entire app directory and temporary .env file
   additionalVolumes:
     # - name: mastra-app-storage
     #   persistentVolumeClaim:
@@ -300,7 +300,6 @@ identity:
         - http://localhost:8081/login/callback?authType=ias
         - http://localhost:5002/login/callback?authType=ias
 
-
       post-logout-redirect-uris:
         - https://*.{{ tpl .Values.global.domain . }}/*/logout.html
     xsuaa-cross-consumption: true
@@ -309,6 +308,7 @@ identity:
         type: public
       - name: mastra-api
         type: public
+    display-name: v1
 
 backendDestinations:
   user-api:
@@ -317,6 +317,8 @@ backendDestinations:
   mastra-api:
     service: mastra
     forwardAuthToken: true
+  srv-api:
+    service: srv
 
 destination:
   serviceOfferingName: destination
@@ -324,8 +326,6 @@ destination:
   parameters:
     version: 1.0.0
 
-    
 postgres:
   serviceOfferingName: postgresql-db
   servicePlanName: development
-   

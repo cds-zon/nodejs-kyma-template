@@ -11,15 +11,15 @@ modules:
     build-parameters:
       commands:
         - docker buildx build --platform linux/amd64 -t router/api:v2 -f Dockerfile . --load
-  
+
   - name: agents/mastra
     build-parameters:
       commands:
         - docker buildx build --platform linux/amd64 -t agents/mastra:v2 -f app/mastra/Dockerfile --target dev . --load
 
-  - name: ias-approuter
+  - name: v1-approuter
     build-parameters:
       commands:
         - cp -r app/router gen/chart/router
         - docker pull sapse/approuter:20.7.0
-        - docker tag sapse/approuter:20.7.0 ias-approuter:v2
+        - docker tag sapse/approuter:20.7.0 v1-approuter:v2
