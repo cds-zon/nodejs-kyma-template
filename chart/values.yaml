@@ -7,7 +7,7 @@ global:
     name: docker-registry
   image:
     registry: scai-dev.common.repositories.cloud.sap/router
-    tag: v1
+    tag: v2
 srv:
   image:
     repository: api
@@ -329,3 +329,6 @@ destination:
 postgres:
   serviceOfferingName: postgresql-db
   servicePlanName: development
+  #prevent creation of a new instance for each release
+  fullNameOverride: v1-postgres
+  
