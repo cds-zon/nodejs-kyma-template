@@ -1,4 +1,4 @@
-const cds = require('@sap/cds')
+import cds from "@sap/cds";
 
 class UserService extends cds.ApplicationService {
     async me(req) {
@@ -28,4 +28,4 @@ class UserService extends cds.ApplicationService {
     }
 }
 
-module.exports = UserService
+export default UserService;

@@ -1,16 +1,23 @@
-const cds = require('@sap/cds')
+import cds from '@sap/cds'
 
-const { GET, POST, expect, axios } = cds.test (__dirname+'/..')
-axios.defaults.auth = { username: 'no_user_found_for_roles_authenticated-user', password: '' }
+const { GET, POST, expect, axios } = cds.test (import.meta.dirname+'/..')
+axios.defaults.auth = { username: 'alice', password: '' }
 
 describe('OData APIs', () => {
 
 
   it('executes me', async () => {
-    const { data } = await POST `/api/me ${
-      {}
+    const { data } = await GET `/api/me ${
+      {
+        user: 'alice'
+      }
     }`
+    console.log(data)
     // TODO finish this test
-    // expect(data.value).to...
+    expect(data.user).to.equal('alice')
+    expect(data.claims.name).to.equal('Alice')
+    expect(data.claims.email).to.equal('alice@example.com')
+    expect(data.claims.phone).to.equal('1234567890')
+    expect(data.claims.address).to.equal('123 Main St, Anytown, USA')
   })
 })

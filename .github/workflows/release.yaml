@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  tests:
+     uses: ./.github/workflows/test.yaml
+     secrets: inherit
+  deploy-kyma:
+    needs: [tests]
+    uses: ./.github/workflows/kyma.yaml
+    secrets: inherit
+    with:
+      environment: Production

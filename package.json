@@ -65,9 +65,9 @@
     "help": "cds help",
     "cds": "cds",
     "ctz": "ctz",
-    "test": "node --test",
-    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js",
-    "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-persistence.test.spec.js"
+    "test": "npx cds bind --profile dev --exec -- node --test",
+    "test:auth": "npx cds bind --profile hybrid --exec -- node ./e2e-test/auth.test.spec.js",
+    "test:memory": "npx cds bind --profile hybrid --exec -- node ./e2e-test/memory-persistence.test.spec.js"
   },
   "private": true,
   "cds": {
@@ -92,13 +92,19 @@
             "alice": {
               "tenant": "t1",
               "roles": [
-                "admin"
-              ]
+                "authenticated-user"
+              ],
+              "attr": {
+                "name": "Alice",
+                "email": "alice@example.com",
+                "phone": "1234567890",
+                "address": "123 Main St, Anytown, USA"
+              }
             },
             "bob": {
               "tenant": "t2",
               "roles": [
-                "user"
+                "authenticated-user"
               ]
             }
           }
