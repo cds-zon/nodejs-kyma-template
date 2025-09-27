@@ -66,8 +66,8 @@
     "cds": "cds",
     "ctz": "ctz",
     "test": "node --test",
-    "test:auth": "npx cds bind --profile hybrid --exec -- node ./test/auth.test.spec.js",
-    "test:memory": "npx cds bind --profile hybrid --exec -- node ./test/memory-persistence.test.spec.js"
+    "test:auth": "npx cds bind --profile hybrid --exec -- node ./e2e-test/auth.test.spec.js",
+    "test:memory": "npx cds bind --profile hybrid --exec -- node ./e2e-test/memory-persistence.test.spec.js"
   },
   "private": true,
   "cds": {
