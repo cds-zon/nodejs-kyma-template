@@ -1,0 +1,42 @@
+name: Kyma
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: kyma-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  APP_NAME: v1
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: public.int.repositories.cloud.sap/ubuntu:24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: ./.github/actions/kyma-setup
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          user: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          kube-config: ${{ secrets.KUBE_CONFIG }}
+      - run: npm clean-install
+      - run: npx cds up --to k8s
+
+      - uses: ./.github/actions/kyma-info
+        if: always()
+        with:
+          app: ${{ env.APP_NAME }}

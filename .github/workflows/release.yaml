@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  tests:
+     uses: git@github.com:cds-zon/nodejs-kyma-template/.github/workflows/test.yaml@main
+     secrets: inherit
+  deploy-kyma:
+    needs: [tests]
+    uses: git@github.com:cds-zon/nodejs-kyma-template/.github/workflows/kyma.yaml@main
+    secrets: inherit
+    with:
+      environment: Production
