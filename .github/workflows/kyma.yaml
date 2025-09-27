@@ -62,10 +62,10 @@ jobs:
               VERSION=$(echo "$REF" | sed 's|refs/tags/||' | sed 's/\./-/g')
               echo "Tag detected: $VERSION"
           elif [[ "$REF" == refs/heads/release/* ]]; then
-              VERSION=$(echo "$REF" | sed 's|refs/heads/||' | sed 's|/|-|g' | sed 's/\./-/g')
+              VERSION=$(echo "$REF" | sed 's|refs/heads/release/||' | sed 's/\./-/g')
               echo "Release branch detected: $VERSION"
           elif [[ "$REF" == refs/heads/feature/* ]]; then
-              VERSION=$(echo "$REF" | sed 's|refs/heads/||' | sed 's|/|-|g' | sed 's/\./-/g')
+              VERSION=$(echo "$REF" | sed 's|refs/heads/feature/||' | sed 's/\./-/g')
               echo "Feature branch detected: $VERSION"
           elif [[ "$REF" == refs/heads/main ]] || [[ "$REF" == refs/heads/master ]]; then
               VERSION="main"
