@@ -280,8 +280,10 @@ mastra:
 identity:
   serviceOfferingName: identity
   servicePlanName: application
+  externalName: "identity-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
   parameters:
-    displayName: "Chat Service ({{ .Release.Namespace }})"
+    displayName: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
+    display-name: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
     home-page: https://{{ .Release.Namespace }}.{{ .Values.global.domain }}
     multi-tenant: true
     oauth2-configuration:
@@ -308,7 +310,6 @@ identity:
         type: public
       - name: mastra-api
         type: public
-    display-name: v1
 
 backendDestinations:
   user-api:
@@ -323,6 +324,7 @@ backendDestinations:
 destination:
   serviceOfferingName: destination
   servicePlanName: lite
+  externalName: "destination-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
   parameters:
     version: 1.0.0
 
