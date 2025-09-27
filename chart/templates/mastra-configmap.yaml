@@ -1,17 +1,13 @@
-{{- if .Values.mastra.additionalVolumes }}
-{{- range $volume := .Values.mastra.additionalVolumes }}
-{{- if and $volume.configMap (contains $volume.configMap.name "mastra-env-config") }}
+{{- if .Values.mastra }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-mastra-env-config
-  namespace: {{ $.Release.Namespace }}
+  name: {{ .Release.Name }}-mastra-env-config
+  namespace: {{ .Release.Namespace }}
   labels: {{- include "web-application.labels" $ | nindent 4 }}
 data:
   .env: |
     OPENAI_API_KEY="dummy-api-key"
     OPENAI_BASE_URL=http://ai-core-proxy:3002
-{{- end }}
-{{- end }}
 {{- end }}
