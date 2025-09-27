@@ -332,5 +332,5 @@ postgres:
   serviceOfferingName: postgresql-db
   servicePlanName: development
   #prevent creation of a new instance for each release
-  fullNameOverride: v1-postgres
+  fullnameOverride: v1-postgres
   
