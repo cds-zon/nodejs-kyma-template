@@ -189,11 +189,24 @@ setup_github_secrets() {
     fi
     
     print_status "Setting KUBE_CONFIG secret..."
-    if kubectl config view --raw | base64 -w 0 | gh secret set KUBE_CONFIG $org_flag; then
-        print_success "KUBE_CONFIG secret set"
+    # Check if service account kubeconfig exists, otherwise use current kubeconfig
+    if [ -f "github-actions-kubeconfig.yaml" ]; then
+        print_status "Using service account kubeconfig..."
+        if cat github-actions-kubeconfig.yaml | base64 -w 0 | gh secret set KUBE_CONFIG $org_flag; then
+            print_success "KUBE_CONFIG secret set (service account)"
+        else
+            print_error "Failed to set KUBE_CONFIG secret"
+            exit 1
+        fi
     else
-        print_error "Failed to set KUBE_CONFIG secret"
-        exit 1
+        print_warning "Service account kubeconfig not found, using current kubeconfig"
+        print_warning "Note: This may require OIDC authentication in GitHub Actions"
+        if kubectl config view --raw | base64 -w 0 | gh secret set KUBE_CONFIG $org_flag; then
+            print_success "KUBE_CONFIG secret set (current config)"
+        else
+            print_error "Failed to set KUBE_CONFIG secret"
+            exit 1
+        fi
     fi
 }
 
@@ -271,8 +284,9 @@ fi
     print_status "  - \${{ secrets.DOCKER_PASSWORD }}"
     print_status "  - \${{ secrets.KUBE_CONFIG }}"
     print_status ""
-    print_warning "⚠️  Important: If your kubeconfig uses OIDC authentication,"
-    print_warning "make sure your GitHub Actions setup installs kubectl-oidc_login plugin!"
-    print_status "Add this to your workflow setup:"
-    print_status "  curl -LO https://github.com/int128/kubelogin/releases/download/v1.29.0/kubelogin_linux_amd64.zip"
-    print_status "  unzip kubelogin_linux_amd64.zip && sudo mv kubelogin /usr/local/bin/kubectl-oidc_login"
+    if [ -f "github-actions-kubeconfig.yaml" ]; then
+        print_success "✅ Using service account authentication (no OIDC required)"
+    else
+        print_warning "⚠️  Using OIDC kubeconfig - consider creating service account"
+        print_status "To create service account: kubectl apply -f github-actions-service-account.yaml"
+    fi
