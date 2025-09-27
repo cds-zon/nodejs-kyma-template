@@ -48,10 +48,10 @@ runs:
     - run: |
         # Install kubectl-oidc_login plugin for OIDC authentication
         curl -LO "https://github.com/int128/kubelogin/releases/download/v1.29.0/kubelogin_linux_amd64.zip"
-        unzip kubelogin_linux_amd64.zip
+        unzip -o kubelogin_linux_amd64.zip
         sudo mv kubelogin /usr/local/bin/kubectl-oidc_login
         chmod +x /usr/local/bin/kubectl-oidc_login
-        rm kubelogin_linux_amd64.zip
+        rm kubelogin_linux_amd64.zip LICENSE README.md
       shell: bash
     - run: npm install -g ctz
       shell: bash
