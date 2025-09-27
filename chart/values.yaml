@@ -261,7 +261,7 @@ mastra:
     #     subPath: memory.db
     - name: mastra-env-config
       configMap:
-        name: mastra-env-config
+        name: mastra-env-config-{{ $.Release.Name }}
       volumeMount:
         mountPath: /usr/src/app/.env
         subPath: .env
