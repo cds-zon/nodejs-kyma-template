@@ -8,12 +8,12 @@ global:
   imagePullSecret:
     name: docker-registry
   image:
-    registry: scai-dev.common.repositories.cloud.sap/router
+    registry: scai-dev.common.repositories.cloud.sap
     # Tag will be dynamically set from package.json during deployment
     tag: v2
 srv:
   image:
-    repository: api
+    repository: router/api
 
   networkSecurity:
     allowNamespaceInternal: true
@@ -183,7 +183,7 @@ mastra:
     allowNamespaceInternal: true
     enabled: false
   image:
-    repository: mastra
+    repository: agents/mastra
 
   hpa:
     maxReplicas: 1
@@ -261,7 +261,7 @@ mastra:
     #     subPath: memory.db
     - name: mastra-env-config
       configMap:
-        name: mastra-env-config-{{ $.Release.Name }}
+        name: "{{ .Release.Name }}-mastra-env-config"
       volumeMount:
         mountPath: /usr/src/app/.env
         subPath: .env
