@@ -11,11 +11,11 @@ permissions:
 
 jobs:
   tests:
-     uses: git@github.com:cds-zon/nodejs-kyma-template/.github/workflows/test.yaml@main
+     uses: ./.github/workflows/test.yaml
      secrets: inherit
   deploy-kyma:
     needs: [tests]
-    uses: git@github.com:cds-zon/nodejs-kyma-template/.github/workflows/kyma.yaml@main
+    uses: ./.github/workflows/kyma.yaml
     secrets: inherit
     with:
       environment: Production

@@ -1,8 +1,20 @@
 name: Kyma
-
 on:
   workflow_call:
+    # inputs:
+    #   environment:
+    #     type: string
+    #     description: Environment
+    #     required: true
+    #     default: Production
+
   workflow_dispatch:
+    # inputs:
+    #   environment:
+    #     type: string
+    #     description: Environment
+    #     required: true
+    #     default: Production
   push:
     branches:
       - main
