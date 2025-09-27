@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=./values.schema.json
 
 # Version will be set dynamically from package.json name field during deployment
-version: "v1"
 
 global:
   domain: c-127c9ef.stage.kyma.ondemand.com
@@ -11,10 +10,11 @@ global:
   image:
     registry: scai-dev.common.repositories.cloud.sap/router
     # Tag will be dynamically set from package.json during deployment
-    tag: "{{ .Values.version | default \"v1\" }}"
+    tag: v2
 srv:
   image:
     repository: api
+    
   networkSecurity:
     allowNamespaceInternal: true
   bindings:
@@ -79,7 +79,7 @@ approuter:
       path: /
     readiness:
       path: /
-
+ 
   # Environment variables for approuter configuration
   env:
     # TENANT_HOST_PATTERN: "^(.*)-{{ tpl .Values.global.domain . }}"
@@ -183,9 +183,8 @@ mastra:
     allowNamespaceInternal: true
     enabled: false
   image:
-    registry: scai-dev.common.repositories.cloud.sap/agents
     repository: mastra
-    tag: "{{ .Values.version | default \"v1\" }}"
+    
   hpa:
     maxReplicas: 1
     minReplicas: 1
@@ -215,6 +214,7 @@ mastra:
         app-identifier: mastra
     db:
       serviceInstanceName: "postgres"
+      externalName: "v1-postgres"
   env:
     MCP_SERVER_URL: http://mcp-router:5000
     NODE_ENV: development
