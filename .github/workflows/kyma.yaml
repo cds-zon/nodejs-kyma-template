@@ -44,6 +44,10 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+
+      - name: pnpm approve-builds
+        run: pnpm approve-builds esbuild, onnxruntime-node, protobufjs
+        
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
