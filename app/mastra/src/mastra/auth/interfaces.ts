@@ -3,6 +3,8 @@
  */
 
 import cds from "@sap/cds";
+import type { Service,Token } from "@sap/xssec";
+import { SecurityContext } from "@sap/xssec";
 
 // Use CDS User type directly
 
@@ -12,13 +14,14 @@ export interface MastraAuthProvider {
   authorizeUser(user: CDSUser): Promise<boolean>;
 }
 
+ 
     
   // Simple CDS User implementation
- export class CDSUser extends cds.User {
+ export class CDSUser<S extends Service= Service,T extends Token= Token> extends cds.User {
    
-    authInfo?: any;
+    authInfo?: SecurityContext<S,T>;
   
-    constructor(data:any) {
+    constructor(data:ConstructorParameters<typeof cds.User>[0] & { authInfo?: SecurityContext<S,T> }) {
       super(data);
       this.authInfo = "authInfo" in data ? data.authInfo : undefined;
     }

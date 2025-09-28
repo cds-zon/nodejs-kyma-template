@@ -4,13 +4,14 @@
  * Always returns a privileged user for development/testing
  */
 
-import { MastraAuthProvider, CDSUser, User } from "./interfaces";
+import { MastraAuthProvider, CDSUser } from "./interfaces";
+import cds from "@sap/cds";
 
 export class DummyProvider implements MastraAuthProvider {
   private dummyUser: CDSUser;
 
   constructor() {
-    this.dummyUser = new User({
+    this.dummyUser = new CDSUser({
       id: 'anonymous',
       roles: ['any', 'authenticated', 'admin'],
       tenant: 'default',
@@ -19,10 +20,7 @@ export class DummyProvider implements MastraAuthProvider {
         email: 'anonymous@example.com',
         given_name: 'Anonymous',
         family_name: 'User'
-      },
-      authInfo: {
-        provider: 'dummy'
-      }
+      } 
     });
   }
 

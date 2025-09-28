@@ -28,16 +28,19 @@ export class CDSDirectAuth {
    */
   public async authenticateToken(token: string): Promise<CDSUser | null> {
     const securityContext = await this.authService!.createSecurityContext(token);
-    const tokenInfo = securityContext.token;
-    const payload = tokenInfo.getPayload();
+    const {aud,sub,...attr} = securityContext.token.getPayload();
 
     const roles: string[] = getRoles(securityContext, this.credentials); 
 
-    return new User({
-      id: payload.sub || 'unknown',
-      attr:payload,
+    
+    return new CDSUser({
+      id: sub || 'unknown',
+      attr: omitUndefined({
+        ...attr,
+        aud: Array.isArray(aud) ? aud.join(',') : aud,
+      }),
       roles,
-      tenant: securityContext.token.appTid
+      tenant: securityContext.token.appTid,
       authInfo: securityContext
     }); 
 
@@ -78,4 +81,8 @@ function getRoles({token}:SecurityContext<any, any>, credentials:ServiceCredenti
     roles.push('system-user');
   }
   return roles;
+}
+
+function omitUndefined(obj: Record<string, any>) {
+  return Object.fromEntries(Object.entries(obj).filter(([_, value]) => value !== undefined));
 }
