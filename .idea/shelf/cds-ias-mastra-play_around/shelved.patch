@@ -1,0 +1,1184 @@
+Index: app/mastra/src/mastra/auth/cds-auth-provider.ts
+===================================================================
+diff --git a/app/mastra/src/mastra/auth/cds-auth-provider.ts b/app/mastra/src/mastra/auth/cds-auth-provider.ts
+deleted file mode 100644
+--- a/app/mastra/src/mastra/auth/cds-auth-provider.ts	(revision 353db212e2daa4d9ec7776e26a1bce65836095ce)
++++ /dev/null	(revision 353db212e2daa4d9ec7776e26a1bce65836095ce)
+@@ -1,139 +0,0 @@
+-// import type { HonoRequest } from 'hono'; // Using any for compatibility
+-import { MastraAuthProvider } from '@mastra/core/server';
+-import type { MastraAuthProviderOptions } from '@mastra/core/server';
+-import { IdentityService, SecurityContext } from '@sap/xssec';
+-import cds from '@sap/cds';
+-import type { HonoRequest } from 'hono';
+-
+-// CDS User type based on security context
+-export interface CdsUser {
+-  id: string;
+-  name: string;
+-  email?: string;
+-  logonName: string;
+-  givenName?: string;
+-  familyName?: string;
+-  roles?: string[];
+-  tenant?: string;
+-  attributes?: Record<string, any>;
+-}
+-
+-interface MastraAuthCdsOptions extends MastraAuthProviderOptions<CdsUser> {
+-  // No additional options needed for CDS auth
+-}
+-
+-export class MastraAuthCds extends MastraAuthProvider<CdsUser> {
+-  private authService: IdentityService;
+-
+-  constructor(options?: MastraAuthCdsOptions) {
+-    super({name:  'cds', ...options ||{} });
+-
+-    // Initialize XSSEC auth service
+-    const authConfig = cds.env.requires.auth;
+-    
+-    if (!authConfig?.credentials) {
+-      throw new Error(
+-        'CDS auth credentials not found. Make sure your application is bound to XSUAA service or auth credentials are properly configured.'
+-      );
+-    }
+-
+-    this.authService = new IdentityService(authConfig.credentials);
+-    console.log('🔐 MastraAuthCds initialized with XSSEC');
+-
+-    this.registerOptions(options);
+-  }
+-
+-  public async authenticateToken(token: string, request: HonoRequest): Promise<CdsUser | null> {
+-    console.log('🔐 MastraAuthCds authenticateToken');
+-
+-    try {
+-      // Create security context using XSSEC
+-      const securityContext = await this.authService.createSecurityContext(token);
+-      
+-      if (!securityContext) {
+-        console.log('❌ Failed to create security context');
+-        return null;
+-      }
+-
+-      // Extract user information from security context
+-      const user: CdsUser = {
+-        id: securityContext.getLogonName(),
+-        name: `${securityContext.getGivenName() || ''} ${securityContext.getFamilyName() || ''}`.trim(),
+-        email: securityContext.getEmail(),
+-        logonName: securityContext.getLogonName(),
+-        givenName: securityContext.getGivenName(),
+-        familyName: securityContext.getFamilyName(),
+-        // roles: securityContext.getRoleCollections?.(), // Uncomment if needed
+-        // tenant: securityContext.getZoneId?.(), // Uncomment if needed
+-        attributes: {
+-          logonName: securityContext.getLogonName(),
+-          // zoneId: securityContext.getZoneId?.(), // Method may not exist in all versions
+-          email: securityContext.getEmail(),
+-        }
+-      };
+-
+-      // Try to enrich user data from CDS context if available
+-      const cdsUser = MastraAuthCds.getCurrentCdsUser();
+-      if (cdsUser) {
+-        console.log('🔄 Enriching user data from CDS context');
+-        // Merge CDS context data with XSSEC data
+-        user.attributes = {
+-          ...user.attributes,
+-          ...cdsUser.attributes,
+-          cdsContext: true
+-        };
+-      }
+-
+-      console.log('✅ CDS user authenticated:', user.id);
+-      return user;
+-    } catch (error) {
+-      console.error('❌ CDS token authentication failed:', error instanceof Error ? error.message : String(error));
+-      return null;
+-    }
+-  }
+-
+-  public async authorizeUser(user: CdsUser, request: HonoRequest): Promise<boolean> {
+-    console.log('🔐 MastraAuthCds authorizeUser');
+-    if (!user) {
+-      return false;
+-    }
+-
+-    // Basic authorization - user must have a valid logonName
+-    if (!user.logonName || !user.id) {
+-      console.log('❌ User missing required fields for authorization');
+-      return false;
+-    }
+-
+-    // You can add custom authorization logic here based on:
+-    // - user.roles (if available)
+-    // - user.tenant
+-    // - request path/method
+-    // - custom business logic
+-
+-    console.log('✅ CDS user authorized:', user.id);
+-    return true;
+-  }
+-
+-  // Helper method to get current user from CDS context (if available)
+-  static getCurrentCdsUser(): CdsUser | null {
+-    try {
+-      // Try to get user from CDS context
+-      const context = cds.context as any;
+-      if (context?.user) {
+-        return {
+-          id: context.user.id || 'unknown',
+-          name: context.user.name || 'Unknown User',
+-          email: context.user.email,
+-          logonName: context.user.id || 'unknown',
+-          attributes: context.user.attr || {}
+-        };
+-      }
+-      return null;
+-    } catch (error) {
+-      console.warn('Could not get current CDS user:', error);
+-      return null;
+-    }
+-  }
+-}
+-
+-export const cdsAuthProvider = new MastraAuthCds();
+\ No newline at end of file
+Index: app/mastra/src/mastra/middleware/cds-middleware.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/mastra/src/mastra/middleware/cds-middleware.ts b/app/mastra/src/mastra/middleware/cds-middleware.ts
+new file mode 100644
+--- /dev/null	(date 1759040921373)
++++ b/app/mastra/src/mastra/middleware/cds-middleware.ts	(date 1759040921373)
+@@ -0,0 +1,236 @@
++import { createMiddleware } from "hono/factory";
++import { toReqRes, toFetchResponse } from "fetch-to-node";
++import cds from "@sap/cds";
++import { IdentityService, SecurityContext } from "@sap/xssec";
++
++// Import CDS middlewares directly from the internal structure
++const cdsMiddlewares = require("@sap/cds/lib/srv/middlewares");
++const authFactory = require("@sap/cds/lib/srv/middlewares/auth");
++
++// Type definitions for Hono context with CDS integration
++type CDSEnv = {
++  Variables: {
++    securityContext: SecurityContext<any, any>;
++    user: any;
++    cdsContext: any;
++    cdsModel: any;
++    tenant: string;
++    userAttributes: Record<string, any>;
++  };
++};
++
++// CDS Context Integration Middleware
++export const cdsContextMiddleware = createMiddleware<CDSEnv>(async (c, next) => {
++  console.log("🔄 CDS Context Middleware - Processing:", c.req.method, c.req.url);
++
++  try {
++    // Convert Hono request to Node.js req/res for CDS compatibility
++    const { req, res } = toReqRes(c.req.raw);
++
++    // Create CDS context from the request
++    const cdsContext = await createCDSContext(req);
++    
++    if (cdsContext) {
++      c.set("cdsContext", cdsContext);
++      
++      // Extract user information from CDS context
++      if (cdsContext.user) {
++        const user = {
++          id: cdsContext.user.id || 'anonymous',
++          name: cdsContext.user.name || '',
++          email: cdsContext.user.email || '',
++          tenant: cdsContext.user.tenant || 'default',
++          roles: cdsContext.user.roles || [],
++          attributes: cdsContext.user.attr || {}
++        };
++        
++        c.set("user", user);
++        c.set("tenant", user.tenant);
++        c.set("userAttributes", user.attributes);
++        
++        // Set response headers for downstream services
++        c.res.headers.set("X-CDS-User-ID", user.id);
++        c.res.headers.set("X-CDS-User-Tenant", user.tenant);
++        c.res.headers.set("X-CDS-User-Attributes", JSON.stringify(user.attributes));
++        
++        console.log("✅ CDS Context created for user:", user.id);
++      }
++    }
++  } catch (error) {
++    console.warn("⚠️  CDS Context creation failed:", error);
++    // Continue without CDS context - don't block the request
++  }
++
++  await next();
++});
++
++// Enhanced CDS Authentication Middleware
++export const cdsAuthMiddleware = createMiddleware<CDSEnv>(async (c, next) => {
++  console.log("🔐 CDS Auth Middleware - Processing:", c.req.method, c.req.url);
++
++  try {
++    // Check if we have CDS headers (forwarded from CDS service)
++    const cdsUserId = c.req.header("X-CDS-User-ID");
++    const cdsUserTenant = c.req.header("X-CDS-User-Tenant");
++    const cdsUserAttributes = c.req.header("X-CDS-User-Attributes");
++
++    if (cdsUserId) {
++      // Use forwarded CDS context
++      const user = {
++        id: cdsUserId,
++        tenant: cdsUserTenant || 'default',
++        attributes: cdsUserAttributes ? JSON.parse(cdsUserAttributes) : {}
++      };
++      
++      c.set("user", user);
++      c.set("tenant", user.tenant);
++      c.set("userAttributes", user.attributes);
++      
++      console.log("✅ Using forwarded CDS user:", user.id);
++    } else {
++      // Fallback to direct JWT validation
++      const authHeader = c.req.header("Authorization");
++      
++      if (authHeader) {
++        const token = authHeader.replace(/^Bearer\s+/i, "");
++        const securityContext = await validateJWTToken(token);
++        
++        if (securityContext) {
++          c.set("securityContext", securityContext);
++          
++          const user = {
++            id: securityContext.getLogonName(),
++            name: `${securityContext.getGivenName()} ${securityContext.getFamilyName()}`,
++            email: securityContext.getEmail(),
++            tenant: (securityContext as any).getZoneId?.() || 'default',
++            roles: [], // Add role extraction if needed
++            attributes: {
++              givenName: securityContext.getGivenName(),
++              familyName: securityContext.getFamilyName(),
++              email: securityContext.getEmail(),
++              logonName: securityContext.getLogonName(),
++              zoneId: (securityContext as any).getZoneId?.()
++            }
++          };
++          
++          c.set("user", user);
++          c.set("tenant", user.tenant);
++          c.set("userAttributes", user.attributes);
++          
++          console.log("✅ JWT validated for user:", user.id);
++        }
++      }
++    }
++  } catch (error) {
++    console.error("❌ CDS Auth failed:", error);
++    return c.json(
++      { error: "Unauthorized", message: "CDS authentication required" },
++      401
++    );
++  }
++
++  await next();
++});
++
++// CDS Model Integration Middleware
++export const cdsModelMiddleware = createMiddleware<CDSEnv>(async (c, next) => {
++  console.log("📊 CDS Model Middleware - Processing:", c.req.method, c.req.url);
++
++  try {
++    // Load CDS model if available
++    const model = cds.model;
++    if (model) {
++      c.set("cdsModel", model);
++      console.log("✅ CDS Model loaded");
++    }
++  } catch (error) {
++    console.warn("⚠️  CDS Model loading failed:", error);
++  }
++
++  await next();
++});
++
++// Helper function to create CDS context
++async function createCDSContext(req: any) {
++  try {
++    // Initialize CDS if not already done
++    await cds.connect();
++
++    // Use CDS middleware to process the request
++    const authMiddleware = authFactory();
++    
++    // Create a mock response object for middleware processing
++    const mockRes = {
++      headersSent: false,
++      setHeader: () => {},
++      getHeader: () => undefined,
++      removeHeader: () => {},
++      writeHead: () => {},
++      write: () => {},
++      end: () => {}
++    };
++
++    return new Promise((resolve) => {
++      // Process the request through CDS auth middleware
++      authMiddleware(req, mockRes, () => {
++        resolve(cds.context);
++      });
++    });
++  } catch (error) {
++    console.error("Failed to create CDS context:", error);
++    return null;
++  }
++}
++
++// Helper function to validate JWT token
++async function validateJWTToken(token: string): Promise<SecurityContext<any, any> | null> {
++  try {
++    const authConfig = cds.env.requires?.auth;
++    
++    if (!authConfig?.credentials) {
++      console.log("No auth credentials configured");
++      return null;
++    }
++
++    const identityService = new IdentityService(authConfig.credentials);
++    return await identityService.createSecurityContext(token);
++  } catch (error) {
++    console.error("JWT validation failed:", error);
++    return null;
++  }
++}
++
++// Combined CDS Middleware Stack
++export const cdsMiddlewareStack = [
++  cdsContextMiddleware,
++  cdsAuthMiddleware,
++  cdsModelMiddleware
++];
++
++// Utility function to get CDS user from context
++export function getCDSUser(c: any) {
++  return c.get("user") || null;
++}
++
++// Utility function to get CDS tenant from context
++export function getCDSTenant(c: any) {
++  return c.get("tenant") || 'default';
++}
++
++// Utility function to get CDS user attributes from context
++export function getCDSUserAttributes(c: any) {
++  return c.get("userAttributes") || {};
++}
++
++// Utility function to check if user has specific role
++export function hasRole(c: any, role: string): boolean {
++  const user = c.get("user");
++  return user?.roles?.includes(role) || false;
++}
++
++// Utility function to check if user belongs to specific tenant
++export function belongsToTenant(c: any, tenant: string): boolean {
++  return getCDSTenant(c) === tenant;
++}
++
++export default cdsMiddlewareStack;
+Index: app/mastra/src/mastra/middleware/README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/mastra/src/mastra/middleware/README.md b/app/mastra/src/mastra/middleware/README.md
+new file mode 100644
+--- /dev/null	(date 1759031389707)
++++ b/app/mastra/src/mastra/middleware/README.md	(date 1759031389707)
+@@ -0,0 +1,316 @@
++# CDS Middleware for Mastra
++
++This directory contains CDS (Cloud Application Programming Model) middleware implementations for integrating SAP CDS authentication and context with your Mastra service.
++
++## Files Overview
++
++- `cds-lightweight.ts` - Lightweight CDS middleware (no internal CDS imports)
++- `cds-simple.ts` - Full CDS middleware using exposed internal modules via `.pnpmfile.cjs`
++- `cds-middleware.ts` - Advanced CDS middleware with full feature set
++- `auth.ts` - Original XSSEC-based authentication middleware
++
++## Current Implementation
++
++The project currently uses `cds-simple.ts` which leverages the `.pnpmfile.cjs` file in the root to expose internal CDS middleware modules.
++
++### How it Works
++
++1. **`.pnpmfile.cjs`** modifies the `@sap/cds` package during installation to expose internal middleware paths
++2. **`cds-simple.ts`** imports and uses these exposed CDS middlewares
++3. **Mastra integration** processes both forwarded CDS headers and direct JWT tokens
++
++## Usage Examples
++
++### Basic Integration
++
++```typescript
++import lightweightCDSMiddleware, { getCDSUser, getCDSTenant } from './middleware/cds-simple';
++
++// In your Mastra configuration
++export const mastra = new Mastra({
++  server: {
++    middleware: [
++      {
++        path: "*",
++        handler: lightweightCDSMiddleware
++      }
++    ]
++  }
++});
++```
++
++### Accessing User Context
++
++```typescript
++// In your API handlers
++{
++  path: "/my-endpoint",
++  handler: async (c) => {
++    const user = getCDSUser(c);
++    const tenant = getCDSTenant(c);
++    const attributes = getCDSUserAttributes(c);
++    
++    if (!user) {
++      return c.json({ error: 'Authentication required' }, 401);
++    }
++    
++    return c.json({
++      message: `Hello ${user.id} from tenant ${tenant}`,
++      userInfo: user,
++      attributes
++    });
++  }
++}
++```
++
++### Memory with User Context
++
++```typescript
++// Use CDS context for memory isolation
++const stream = await mastra.getAgent("researchAgent").streamVNext(messages, {
++  format: "aisdk",
++  savePerStep: true,
++  memory: {
++    resource: user?.id || "default",
++    thread: `${tenant}-${user?.id}-${sessionId}`,
++  }
++});
++```
++
++## Authentication Methods
++
++### Method 1: Header Forwarding (from CDS Service)
++
++When requests come through a CDS service (e.g., via router), the middleware reads:
++
++```
++X-CDS-User-ID: user123
++X-CDS-User-Tenant: tenant-a
++X-CDS-User-Attributes: {"name":"John Doe","email":"john@example.com"}
++```
++
++### Method 2: Direct JWT Processing
++
++For direct requests with JWT tokens:
++
++```
++Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
++```
++
++The middleware processes the JWT through CDS middleware pipeline to extract user context.
++
++## User Context Structure
++
++```typescript
++interface CDSUser {
++  id: string;           // User identifier
++  tenant: string;       // Tenant identifier
++  attributes: {         // User attributes from JWT/CDS
++    [key: string]: any;
++  };
++}
++```
++
++## Utility Functions
++
++### Role-based Access Control
++
++```typescript
++import { hasRole, belongsToTenant } from './middleware/cds-simple';
++
++// Check user roles (from JWT scopes)
++if (hasRole(c, 'admin')) {
++  // Admin-only logic
++}
++
++// Check tenant membership
++if (belongsToTenant(c, 'production')) {
++  // Production tenant logic
++}
++```
++
++### Error Handling
++
++The middleware gracefully handles various scenarios:
++
++- **No authentication** → continues without user context
++- **Invalid tokens** → logs warning, continues without context
++- **CDS processing errors** → falls back to header-based context
++- **Missing headers** → attempts JWT processing
++
++## Development Setup
++
++### Prerequisites
++
++1. **PNPM** - Required for `.pnpmfile.cjs` support
++2. **CDS Environment** - Properly configured CDS service
++3. **Authentication Service** - XSUAA or IAS configuration
++
++### Installation
++
++The middleware is automatically configured when you install dependencies:
++
++```bash
++pnpm install  # Applies .pnpmfile.cjs modifications
++```
++
++### Configuration
++
++Set up your CDS authentication in environment:
++
++```bash
++# Environment variables
++export CDS_CONFIG='{"requires":{"auth":{"kind":"jwt"}}}'
++export VCAP_SERVICES='{"xsuaa":[{"credentials":{...}}]}'
++```
++
++## Testing
++
++### Unit Tests
++
++```typescript
++// Test CDS context extraction
++const mockContext = {
++  req: {
++    header: (name: string) => {
++      const headers = {
++        'X-CDS-User-ID': 'test-user',
++        'X-CDS-User-Tenant': 'test-tenant'
++      };
++      return headers[name];
++    }
++  },
++  set: jest.fn(),
++  get: jest.fn()
++};
++
++await simpleCDSMiddleware(mockContext, async () => {});
++expect(mockContext.set).toHaveBeenCalledWith('user', expect.objectContaining({
++  id: 'test-user',
++  tenant: 'test-tenant'
++}));
++```
++
++### Integration Tests
++
++```bash
++# Test with actual CDS service
++curl -H "Authorization: Bearer $JWT_TOKEN" \
++     -H "Content-Type: application/json" \
++     http://localhost:4111/user/me
++
++# Test with forwarded headers
++curl -H "X-CDS-User-ID: test-user" \
++     -H "X-CDS-User-Tenant: test-tenant" \
++     http://localhost:4111/user/me
++```
++
++## Troubleshooting
++
++### Common Issues
++
++1. **Build fails with CDS imports**
++   - Solution: Use `.pnpmfile.cjs` to expose internal modules
++   - Check: Ensure `pnpm install` was run after adding `.pnpmfile.cjs`
++
++2. **No user context available**
++   - Check: Authorization header format (`Bearer <token>`)
++   - Check: CDS configuration and credentials
++   - Check: Middleware registration order
++
++3. **JWT validation fails**
++   - Check: Token format and signature
++   - Check: XSSEC configuration
++   - Check: Service bindings in VCAP_SERVICES
++
++### Debug Logging
++
++Enable detailed logging:
++
++```typescript
++// In your middleware
++console.log('CDS Context:', {
++  user: cds.context?.user,
++  headers: Object.fromEntries(c.req.raw.headers),
++  path: c.req.path
++});
++```
++
++### Environment Debug
++
++```bash
++# Check CDS configuration
++DEBUG=cds:* npm start
++
++# Check authentication
++DEBUG=cds:auth npm start
++```
++
++## Advanced Usage
++
++### Custom Authentication Logic
++
++```typescript
++// Override default auth processing
++export const customCDSMiddleware = createMiddleware(async (c, next) => {
++  // Custom pre-processing
++  const customHeaders = extractCustomHeaders(c.req);
++  
++  // Run standard CDS middleware
++  await simpleCDSMiddleware(c, async () => {});
++  
++  // Custom post-processing
++  const user = getCDSUser(c);
++  if (user) {
++    await enrichUserContext(user, customHeaders);
++  }
++  
++  await next();
++});
++```
++
++### Multi-tenant Configuration
++
++```typescript
++// Tenant-specific settings
++const tenantConfigs = {
++  'tenant-a': {
++    features: ['feature1', 'feature2'],
++    limits: { requests: 1000 }
++  },
++  'tenant-b': {
++    features: ['feature1'],
++    limits: { requests: 500 }
++  }
++};
++
++// In handler
++const tenant = getCDSTenant(c);
++const config = tenantConfigs[tenant];
++if (config && !config.features.includes('advanced-ai')) {
++  return c.json({ error: 'Feature not available' }, 403);
++}
++```
++
++## Migration Guide
++
++### From Basic Auth
++
++1. Replace basic auth middleware with CDS middleware
++2. Update user context access patterns
++3. Test with actual CDS tokens
++
++### From Custom Auth
++
++1. Remove custom auth implementation
++2. Configure CDS authentication
++3. Update user attribute access patterns
++4. Test multi-tenant scenarios
++
++## Security Considerations
++
++1. **Token Validation** - Always validate JWT signatures
++2. **Header Sanitization** - Sanitize forwarded headers
++3. **Context Isolation** - Ensure proper tenant isolation
++4. **Audit Logging** - Log authentication events
++5. **Error Handling** - Don't expose sensitive error details
+Index: app/mastra/src/mastra/auth/cds.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/mastra/src/mastra/auth/cds.ts b/app/mastra/src/mastra/auth/cds.ts
+new file mode 100644
+--- /dev/null	(date 1759031917316)
++++ b/app/mastra/src/mastra/auth/cds.ts	(date 1759031917316)
+@@ -0,0 +1,141 @@
++// import type { HonoRequest } from 'hono'; // Using any for compatibility
++import { MastraAuthProvider } from '@mastra/core/server';
++import type { MastraAuthProviderOptions } from '@mastra/core/server';
++import { IdentityService, SecurityContext } from '@sap/xssec';
++import cds from '@sap/cds';
++import type { HonoRequest } from 'hono';
++
++// CDS User type based on security context
++export interface CdsUser {
++  id: string;
++  name: string;
++  email?: string;
++  logonName: string;
++  givenName?: string;
++  familyName?: string;
++  roles?: string[];
++  tenant?: string;
++  attributes?: Record<string, any>;
++}
++
++interface MastraAuthCdsOptions extends MastraAuthProviderOptions<CdsUser> {
++  // No additional options needed for CDS auth
++}
++
++export class MastraAuthCds extends MastraAuthProvider<CdsUser> {
++  private authService: IdentityService;
++
++  constructor(options?: MastraAuthCdsOptions) {
++    super({name:  'cds', ...options ||{} });
++
++    // Initialize XSSEC auth service
++    const authConfig = cds.env.requires.auth;
++    
++    if (!authConfig?.credentials) {
++      throw new Error(
++        'CDS auth credentials not found. Make sure your application is bound to XSUAA service or auth credentials are properly configured.'
++      );
++    }
++
++    this.authService = new IdentityService(authConfig.credentials);
++    console.log('🔐 MastraAuthCds initialized with XSSEC');
++
++    this.registerOptions(options);
++  }
++
++  public async authenticateToken(token: string, request: HonoRequest): Promise<CdsUser | null> {
++    console.log('🔐 MastraAuthCds authenticateToken', cds.context?.user);
++     
++    try {
++      // Create security context using XSSEC
++      const securityContext = await this.authService.createSecurityContext(token);
++      
++      if (!securityContext) {
++        console.log('❌ Failed to create security context');
++        return null;
++      }
++
++      // Extract user information from security context
++      const user: CdsUser = {
++        id: securityContext.getLogonName(),
++        name: `${securityContext.getGivenName() || ''} ${securityContext.getFamilyName() || ''}`.trim(),
++        email: securityContext.getEmail(),
++        logonName: securityContext.getLogonName(),
++        givenName: securityContext.getGivenName(),
++        familyName: securityContext.getFamilyName(),
++        // roles: securityContext.getRoleCollections?.(), // Uncomment if needed
++        // tenant: securityContext.getZoneId?.(), // Uncomment if needed
++        attributes: {
++          logonName: securityContext.getLogonName(),
++          // zoneId: securityContext.getZoneId?.(), // Method may not exist in all versions
++          email: securityContext.getEmail(),
++        }
++      };
++
++      // Try to enrich user data from CDS context if available
++      const cdsUser = MastraAuthCds.getCurrentCdsUser();
++      if (cdsUser) {
++        console.log('🔄 Enriching user data from CDS context');
++        // Merge CDS context data with XSSEC data
++        user.attributes = {
++          ...user.attributes,
++          ...cdsUser.attributes,
++          cdsContext: true
++        };
++      }
++
++      console.log('✅ CDS user authenticated:', user.id);
++      return user;
++    } catch (error) {
++      console.error('❌ CDS token authentication failed:', error instanceof Error ? error.message : String(error));
++      return null;
++    }
++  }
++
++  public async authorizeUser(user: CdsUser, request: HonoRequest): Promise<boolean> {
++    console.log('🔐 MastraAuthCds authorizeUser', cds.context?.user
++      
++    );
++    if (!user) {
++      return false;
++    }
++
++    // Basic authorization - user must have a valid logonName
++    if (!user.logonName || !user.id) {
++      console.log('❌ User missing required fields for authorization');
++      return false;
++    }
++
++    // You can add custom authorization logic here based on:
++    // - user.roles (if available)
++    // - user.tenant
++    // - request path/method
++    // - custom business logic
++
++    console.log('✅ CDS user authorized:', user.id);
++    return true;
++  }
++
++  // Helper method to get current user from CDS context (if available)
++  static getCurrentCdsUser(): CdsUser | null {
++    try {
++      // Try to get user from CDS context
++      const context = cds.context as any;
++      if (context?.user) {
++        return {
++          id: context.user.id || 'unknown',
++          name: context.user.name || 'Unknown User',
++          email: context.user.email,
++          logonName: context.user.id || 'unknown',
++          attributes: context.user.attr || {}
++        };
++      }
++      return null;
++    } catch (error) {
++      console.warn('Could not get current CDS user:', error);
++      return null;
++    }
++  }
++}
++
++export const cdsAuthProvider = new MastraAuthCds();
+\ No newline at end of file
+Index: app/mastra/src/mastra/middleware/cds-runtime.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/mastra/src/mastra/middleware/cds-runtime.ts b/app/mastra/src/mastra/middleware/cds-runtime.ts
+new file mode 100644
+--- /dev/null	(date 1759042119198)
++++ b/app/mastra/src/mastra/middleware/cds-runtime.ts	(date 1759042119198)
+@@ -0,0 +1,186 @@
++import { createMiddleware } from "hono/factory";
++
++/**
++ * Runtime CDS middleware that doesn't import CDS at build time
++ * This avoids bundling issues while still providing CDS integration
++ */
++
++// Global CDS reference (will be set at runtime)
++let cds: any = null;
++let authMiddleware: any = null;
++
++// Initialize CDS at runtime
++function initializeCDS() {
++  if (!cds) {
++    try {
++      // Dynamic import to avoid bundling issues
++      cds = require("@sap/cds");
++      const auth = require("@sap/cds/lib/srv/middlewares/auth/index.js");
++      authMiddleware = auth(cds.requires?.auth || {});
++      console.log("✅ CDS runtime initialized");
++    } catch (error) {
++      console.warn("⚠️  CDS runtime initialization failed:", error);
++    }
++  }
++}
++
++export const cdsContextMiddleware = createMiddleware(async (c, next) => {
++  console.log("🔄 CDS Context Middleware - Processing:", c.req.method, c.req.url);
++  
++  // Initialize CDS if needed
++  if (!cds) {
++    initializeCDS();
++  }
++  
++  if (cds) {
++    try {
++      const corr_id = 'x-correlation-id';
++      const req_id = 'x-request-id';
++      const vr_id = 'x-vcap-request-id';
++      
++      const id = c.req.header(corr_id) || c.req.header(req_id) || c.req.header(vr_id) || cds.utils?.uuid?.() || Math.random().toString(36);
++      
++      // Set correlation ID header
++      c.res.headers.set('X-Correlation-ID', id);
++      c.set("correlation-id", id);
++    } catch (error) {
++      console.warn("⚠️  CDS Context creation failed:", error);
++    }
++  }
++  
++  await next();
++});
++
++export const cdsAuthMiddleware = createMiddleware(async (c, next) => {
++  console.log("🔄 CDS Auth Middleware - Processing:", c.req.method, c.req.url);
++  
++  // Initialize CDS if needed
++  if (!cds) {
++    initializeCDS();
++  }
++  
++  try {
++    // Check for forwarded CDS headers first (from CDS service)
++    const cdsUserId = c.req.header("X-CDS-User-ID");
++    const cdsUserTenant = c.req.header("X-CDS-User-Tenant");
++    const cdsUserAttributes = c.req.header("X-CDS-User-Attributes");
++
++    if (cdsUserId) {
++      // Use forwarded CDS context
++      const user = {
++        id: cdsUserId,
++        tenant: cdsUserTenant || 'default',
++        attr: cdsUserAttributes ? JSON.parse(cdsUserAttributes) : {},
++        roles: []
++      };
++      
++      c.set("user", user);
++      c.set("tenant", user.tenant);
++      console.log("✅ Using forwarded CDS user:", user.id);
++    } else if (authMiddleware && cds) {
++      // Try CDS auth middleware for JWT processing
++      const { toReqRes } = require("fetch-to-node");
++      const { req, res } = toReqRes(c.req.raw);
++      
++      await new Promise<void>((resolve, reject) => {
++        authMiddleware(req, res, (error?: any) => {
++          if (error) {
++            console.warn("⚠️  CDS Auth failed:", error);
++            resolve(); // Don't reject, continue without auth
++          } else if (cds.context?.user) {
++            const user = cds.context.user;
++            c.set("user", user);
++            c.set("tenant", user.tenant || 'default');
++            console.log("✅ CDS Auth processed for user:", user.id);
++            resolve();
++          } else {
++            resolve();
++          }
++        });
++      });
++    } else {
++      // Fallback: try to extract from JWT manually
++      const authHeader = c.req.header("Authorization");
++      if (authHeader) {
++        const token = authHeader.replace(/^Bearer\s+/i, "");
++        const userInfo = extractUserFromJWT(token);
++        
++        if (userInfo) {
++          c.set("user", userInfo);
++          c.set("tenant", userInfo.tenant);
++          console.log("✅ JWT processed for user:", userInfo.id);
++        }
++      }
++    }
++  } catch (error) {
++    console.warn("⚠️  CDS auth processing failed:", error);
++  }
++
++  await next();
++});
++
++// Simple JWT decoder (for fallback)
++function extractUserFromJWT(token: string) {
++  try {
++    const parts = token.split('.');
++    if (parts.length !== 3) return null;
++    
++    const payload = JSON.parse(atob(parts[1]));
++    
++    return {
++      id: payload.user_name || payload.sub || payload.email || 'anonymous',
++      name: payload.name || `${payload.given_name || ''} ${payload.family_name || ''}`.trim() || '',
++      email: payload.email || '',
++      tenant: payload.zid || payload.tenant || 'default',
++      roles: payload.scope ? (Array.isArray(payload.scope) ? payload.scope : payload.scope.split(' ')) : [],
++      attr: {
++        given_name: payload.given_name,
++        family_name: payload.family_name,
++        email: payload.email,
++        user_name: payload.user_name,
++        zid: payload.zid,
++        scope: payload.scope
++      }
++    };
++  } catch (error) {
++    console.warn("Failed to parse JWT:", error);
++    return null;
++  }
++}
++
++// Utility functions for easy access to CDS context
++export function getCDSUser(c: any) {
++  return c.get("user") || null;
++}
++
++export function getCDSTenant(c: any) {
++  const user = c.get("user");
++  return c.get("tenant") || user?.tenant || 'default';
++}
++
++export function getCDSUserAttributes(c: any) {
++  const user = c.get("user");
++  return user?.attr || {};
++}
++
++export function hasRole(c: any, role: string): boolean {
++  const user = c.get("user");
++  const roles = user?.roles || [];
++  return Array.isArray(roles) ? roles.includes(role) : false;
++}
++
++export function belongsToTenant(c: any, tenant: string): boolean {
++  return getCDSTenant(c) === tenant;
++}
++
++// Export middleware stack
++export default [
++  {
++    path: "*",
++    handler: cdsContextMiddleware
++  },
++  {
++    path: "*",
++    handler: cdsAuthMiddleware
++  }
++];
+Index: app/mastra/src/mastra/middleware/cds.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/mastra/src/mastra/middleware/cds.ts b/app/mastra/src/mastra/middleware/cds.ts
+new file mode 100644
+--- /dev/null	(date 1759042119234)
++++ b/app/mastra/src/mastra/middleware/cds.ts	(date 1759042119234)
+@@ -0,0 +1,107 @@
++import { createMiddleware } from "hono/factory";
++import { FetchServerResponse, toReqRes } from "fetch-to-node";
++import cds from "@sap/cds";
++// CDS middleware for Mastra integration
++// const {context, auth} = require("@sap/cds/lib/srv/middlewares/index.js");
++const auth = require("@sap/cds/lib/srv/middlewares/auth/index.js");
++
++
++export const cdsContextMiddleware = createMiddleware(async (c, next) => {
++  console.log("🔄 CDS Context Middleware - Processing:", c.req.method, c.req.url);
++  
++  try {
++    const corr_id = 'x-correlation-id';
++    const crippled_corr_id = 'x-correlationid';
++    const req_id = 'x-request-id';
++    const vr_id = 'x-vcap-request-id';
++    const { uuid } = cds.utils;
++    
++    const id = c.req.header(corr_id) || c.req.header(crippled_corr_id) || c.req.header(req_id) || c.req.header(vr_id) || uuid();
++    
++    // Set correlation ID header
++    c.res.headers.set('X-Correlation-ID', id);
++    
++    // Create CDS context
++    const ctx = new cds.EventContext({
++      event: 'http',
++      data: {},
++      headers: Object.fromEntries(c.req.raw.headers),
++    });
++    
++    c.set("cds-context", ctx);
++    c.set("correlation-id", id);
++
++    await new Promise<void>((resolve) => {
++      // @ts-ignore - CDS internal API
++      cds._with(ctx, resolve);
++    });
++  } catch (error) {
++    console.warn("⚠️  CDS Context creation failed:", error);
++  }
++  
++  await next();
++}); 
++
++
++// Import CDS middlewares using the exposed paths from .pnpmfile.cjs
++console.log("🔄 Simple CDS Middleware - Auth Factory:", cds.requires.auth.credentials?.clientid, cds.requires.auth.credentials?.xsappname, cds.requires.auth.credentials?.url);
++const authMiddleware = auth(cds.requires.auth);
++// Simple CDS integration middleware that uses existing CDS middleware pipeline
++export const simpleCDSMiddleware = createMiddleware(async (c, next) => {
++  console.log("🔄 Simple CDS Middleware - Processing:", c.req.method, c.req.url);
++
++  try {
++    // Convert Hono request to Node.js request/response
++    const { req, res } = toReqRes(c.req.raw);
++   
++    // Don't overwrite cds.context, let CDS manage it
++    await new Promise<void>((resolve, reject) => {
++      //@ts-ignore
++      cds.context - cds.context ||{};
++      authMiddleware(req, res, (error?: any) => {
++        if (error) {
++          console.error("❌ CDS Auth error:", error);
++          reject(error);
++        } else {
++          console.log("✅ CDS Auth processed for user:", cds.context?.user?.id);
++          // Set user in Hono context
++          if (cds.context?.user) {
++            c.set("user", cds.context.user);
++            c.set("tenant", cds.context.user.tenant || 'default');
++          }
++          resolve();
++        }
++      });
++    });
++  } catch (error) {
++    console.warn("⚠️  CDS processing failed:", error);
++    // Continue without CDS context - don't block the request
++  }
++
++  await next();
++});
++
++// Utility functions for easy access to CDS context
++export function getCDSUser(c: any) {
++  return c.get("user") || null;
++}
++
++export function getCDSTenant(c: any) {
++  const user = c.get("user");
++  return c.get("tenant") || user?.tenant || 'default';
++}
++
++export function getCDSUserAttributes(c: any) {
++  return c.get("userAttributes") || {};
++}
++
++export function hasRole(c: any, role: string): boolean {
++  const user = c.get("user");
++  return user?.roles?.includes(role) || false;
++}
++
++export function belongsToTenant(c: any, tenant: string): boolean {
++  return getCDSTenant(c) === tenant;
++}
++
++export default [cdsContextMiddleware, simpleCDSMiddleware];

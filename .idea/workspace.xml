@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="98b4e68b-855f-443d-81dc-2948cc905f07" name="Changes" comment="Add inputs for container build and Helm deployment in workflow">
+      <change afterPath="$PROJECT_DIR$/app/mastra/README-CDS-INTEGRATION.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/README-DIRECT-CDS-AUTH.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/auth/cds.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/auth/ias.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/middleware/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/middleware/cds-middleware.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/middleware/cds-runtime.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/mastra/src/mastra/middleware/cds.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/mastra/src/mastra/auth/cds-auth-provider.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/mastra/src/mastra/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/mastra/src/mastra/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/mastra/src/mastra/memory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/mastra/src/mastra/memory.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feature/ci-cd" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="SOFT" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "dinavinter"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:cds-zon/nodejs-kyma-template.git",
+    "accountId": "a85edcc3-05bd-4d1f-999c-2c6d1dd7d630"
+  }
+}]]></component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Users/I347305/aspire-proxy/nodejs-kyma-template/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/I347305/aspire-proxy/nodejs-kyma-template/package.json" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="33GkE9SpQQRrINvvqNMsCrxQwss" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "feature/auth",
+    "last_opened_file_path": "/Users/I347305/aspire-proxy/nodejs-kyma-template",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Users/I347305/aspire-proxy/nodejs-kyma-template/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="98b4e68b-855f-443d-81dc-2948cc905f07" name="Changes" comment="" />
+      <created>1758950681913</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758950681913</updated>
+      <workItem from="1758950683201" duration="6333000" />
+    </task>
+    <task id="LOCAL-00001" summary="Update Docker image tag to v2 and prevent new PostgreSQL instance creation">
+      <option name="closed" value="true" />
+      <created>1758950724763</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758950724763</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Update values.yaml to set image tag to v2 and adjust database external name">
+      <option name="closed" value="true" />
+      <created>1758984162326</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1758984162326</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Add inputs for container build and Helm deployment in workflow">
+      <option name="closed" value="true" />
+      <created>1758989395773</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1758989395773</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+    <option name="exactExcludedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/UserService/index.js" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/UserService/index.js.map" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/cds/outbox/index.js" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/cds/outbox/index.js.map" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/_/index.js" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/_/index.js.map" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/cds/outbox/index.js.map" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/_/index.js.map" />
+        <option value="$PROJECT_DIR$/gen/srv/@cds-models/UserService/index.js.map" />
+      </list>
+    </option>
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature/ci-cd" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="Update Docker image tag to v2 and prevent new PostgreSQL instance creation" />
+    <MESSAGE value="Update values.yaml to set image tag to v2 and adjust database external name" />
+    <MESSAGE value="Add inputs for container build and Helm deployment in workflow" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add inputs for container build and Helm deployment in workflow" />
+  </component>
+</project>
