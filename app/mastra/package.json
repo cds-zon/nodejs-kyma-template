@@ -31,11 +31,7 @@
     "exa-js": "^1.8.27",
     "mastra": "0.13.2",
     "zod": "^3.25.67",
-
-    "@anush008/tokenizers": "^0.0.0",
-    "@libsql/darwin-arm64": "^0.5.22",
-    "@rollup/rollup-darwin-arm64": "^4.50.2"
-
+    "fetch-to-node": "^2.1.0"
   },
   "devDependencies": {
     "@cap-js/cds-typer": ">=0.1",
@@ -43,5 +39,23 @@
     "@types/node": "^24.0.3",
     "tsx": "^4",
     "typescript": "^5.8.3"
+  },
+  "cds": {
+    "requires": {
+      "auth": {
+        "kind": "ias",
+        "config": {
+          "skipValidation": true,
+          "validation": {
+            "x5t": {
+              "enabled": false
+            },
+            "proofToken": {
+              "enabled": false
+            }
+          }
+        }
+      }
+    }
   }
 }

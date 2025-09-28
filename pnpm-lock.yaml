@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
   injectWorkspacePackages: true
 
-packageExtensionsChecksum: sha256-xk1cYETZF4ZValhhS1MJQ2XgZcbRYzx2VLSZ21p5qMk=
+pnpmfileChecksum: sha256-GXkpN8IMC7pU6FPmY90WLUE9HRODNjhIf+9pR+yycw4=
 
 importers:
 
@@ -35,7 +35,7 @@ importers:
         version: 0.4.0(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
       '@cap-js/cds-types':
         specifier: ^0.14.0
-        version: 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3)
+        version: 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@4.17.23)
       '@cap-js/sqlite':
         specifier: ^2
         version: 2.0.2(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
@@ -66,12 +66,6 @@ importers:
       '@ai-sdk/ui-utils':
         specifier: ^1.1.19
         version: 1.2.11(zod@3.25.76)
-      '@anush008/tokenizers':
-        specifier: ^0.0.0
-        version: 0.0.0
-      '@libsql/darwin-arm64':
-        specifier: ^0.5.22
-        version: 0.5.22
       '@mastra/core':
         specifier: ^0.18.0
         version: 0.18.0(openapi-types@12.1.3)(react@19.1.1)(zod@3.25.76)
@@ -93,18 +87,18 @@ importers:
       '@mastra/pg':
         specifier: ^0.16.1
         version: 0.16.1(@mastra/core@0.18.0(openapi-types@12.1.3)(react@19.1.1)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))
-      '@rollup/rollup-darwin-arm64':
-        specifier: ^4.50.2
-        version: 4.52.3
       '@sap/cds':
         specifier: ^9
-        version: 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
+        version: 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
       ai:
         specifier: ^5.0.15
         version: 5.0.56(zod@3.25.76)
       exa-js:
         specifier: ^1.8.27
         version: 1.9.3(ws@8.18.3)
+      fetch-to-node:
+        specifier: ^2.1.0
+        version: 2.1.0
       mastra:
         specifier: 0.13.2
         version: 0.13.2(@mastra/core@0.18.0(openapi-types@12.1.3)(react@19.1.1)(zod@3.25.76))(@opentelemetry/api@1.9.0)(@types/json-schema@7.0.15)(typescript@5.9.2)(zod@3.25.76)
@@ -114,10 +108,10 @@ importers:
     devDependencies:
       '@cap-js/cds-typer':
         specifier: '>=0.1'
-        version: 0.38.0(@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
+        version: 0.38.0(@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(@types/express@4.17.23))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))
       '@cap-js/cds-types':
         specifier: ^0.14.0
-        version: 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3)
+        version: 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(@types/express@4.17.23)
       '@types/node':
         specifier: ^24.0.3
         version: 24.5.2
@@ -1404,11 +1398,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-  '@rollup/rollup-darwin-arm64@4.52.3':
-    resolution: {integrity: sha512-lj9ViATR1SsqycwFkJCtYfQTheBdvlWJqzqxwc9f2qrcVrQaF/gCuBRTiTolkRWS6KvNxSk4KHZWG7tDktLgjg==}
-    cpu: [arm64]
-    os: [darwin]
-
   '@rollup/rollup-darwin-x64@4.50.2':
     resolution: {integrity: sha512-Wa/Wn8RFkIkr1vy1k1PB//VYhLnlnn5eaJkfTQKivirOvzu5uVd2It01ukeQstMursuz7S1bU+8WW+1UPXpa8A==}
     cpu: [x64]
@@ -1632,14 +1621,8 @@ packages:
   '@types/express-serve-static-core@4.19.6':
     resolution: {integrity: sha512-N4LZ2xG7DatVqhCZzOGb1Yi5lMbXSZcmdLDe9EzSndPV2HpWYWzRbaerl2n27irrm94EPpprqa8KpskPT085+A==}
 
-  '@types/express-serve-static-core@5.0.7':
-    resolution: {integrity: sha512-R+33OsgWw7rOhD1emjU7dzCDHucJrgJXMA5PYCzJxVil0dsyx5iBEPHqpPfiKNJQb7lZ1vxwoLR4Z87bBUpeGQ==}
-
   '@types/express@4.17.23':
     resolution: {integrity: sha512-Crp6WY9aTYP3qPi2wGDo9iUe/rceX01UMhnF1jmwDcKCFM6cx7YhGP/Mpr3y9AASpfHixIG0E6azCcL5OcDHsQ==}
-
-  '@types/express@5.0.3':
-    resolution: {integrity: sha512-wGA0NX93b19/dZC1J18tKWVIYWyyF2ZjT9vin/NRu0qzzvfVzWjs04iq2rQ3H65vCTQYlRqs3YHfY7zjdV+9Kw==}
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
@@ -2231,8 +2214,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.225:
-    resolution: {integrity: sha512-Oiv6+nGcMg0xuSUeYumk+eE0pDk0PuQ6Gnz16pErrPtlitaFZxq95hUtvGRg90kcJ/AdsM+AW5VkVUl3fGk+SQ==}
+  electron-to-chromium@1.5.226:
+    resolution: {integrity: sha512-0tS/r72Ze0WUBiDwnqw4X43TxA7gEuZg0kFwLthoCzkshIbNQFjkf6D8xEzBe6tY6Y65fUhZIuNedTugw+11Lw==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2402,6 +2385,9 @@ packages:
 
   fetch-retry@6.0.0:
     resolution: {integrity: sha512-BUFj1aMubgib37I3v4q78fYo63Po7t4HUPTpQ6/QE6yK6cIQrP+W43FYToeTEyg5m2Y7eFUtijUuAv/PDlWuag==}
+
+  fetch-to-node@2.1.0:
+    resolution: {integrity: sha512-Wq05j6LE1GrWpT2t1YbCkyFY6xKRJq3hx/oRJdWEJpZlik3g25MmdJS6RFm49iiMJw6zpZuBOrgihOgy2jGyAA==}
 
   figures@6.1.0:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
@@ -3681,6 +3667,10 @@ packages:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
 
+  statuses@2.0.2:
+    resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
+    engines: {node: '>= 0.8'}
+
   strict-uri-encode@2.0.0:
     resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
     engines: {node: '>=4'}
@@ -4341,9 +4331,9 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
-  '@cap-js/asyncapi@1.0.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))':
+  '@cap-js/asyncapi@1.0.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))':
     dependencies:
-      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
 
   '@cap-js/cds-test@0.4.0(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))':
     dependencies:
@@ -4355,15 +4345,22 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@cap-js/cds-typer@0.38.0(@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))':
+  '@cap-js/cds-typer@0.38.0(@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(@types/express@4.17.23))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))':
     dependencies:
-      '@cap-js/cds-types': 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3)
-      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
+      '@cap-js/cds-types': 0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(@types/express@4.17.23)
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
 
-  '@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@5.0.3)':
+  '@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(@types/express@4.17.23)':
     dependencies:
       '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
-      '@types/express': 5.0.3
+      '@types/express': 4.17.23
+    optionalDependencies:
+      '@sap/cds-dk': 9.3.2(@eslint/js@9.36.0)(tar@7.5.1)
+
+  '@cap-js/cds-types@0.14.0(@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1))(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(@types/express@4.17.23)':
+    dependencies:
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
+      '@types/express': 4.17.23
     optionalDependencies:
       '@sap/cds-dk': 9.3.2(@eslint/js@9.36.0)(tar@7.5.1)
 
@@ -4372,9 +4369,15 @@ snapshots:
       '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
       generic-pool: 3.9.0
 
-  '@cap-js/openapi@1.2.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))':
+  '@cap-js/db-service@2.4.0(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))':
     dependencies:
-      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
+      generic-pool: 3.9.0
+    optional: true
+
+  '@cap-js/openapi@1.2.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))':
+    dependencies:
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
       pluralize: 8.0.0
 
   '@cap-js/sqlite@2.0.2(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))':
@@ -4382,6 +4385,13 @@ snapshots:
       '@cap-js/db-service': 2.4.0(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
       '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
       better-sqlite3: 12.4.1
+
+  '@cap-js/sqlite@2.0.2(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))':
+    dependencies:
+      '@cap-js/db-service': 2.4.0(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
+      better-sqlite3: 12.4.1
+    optional: true
 
   '@clack/core@0.5.0':
     dependencies:
@@ -4553,7 +4563,8 @@ snapshots:
     dependencies:
       js-base64: 3.7.8
 
-  '@libsql/darwin-arm64@0.5.22': {}
+  '@libsql/darwin-arm64@0.5.22':
+    optional: true
 
   '@libsql/darwin-x64@0.5.22':
     optional: true
@@ -5631,8 +5642,6 @@ snapshots:
   '@rollup/rollup-darwin-arm64@4.50.2':
     optional: true
 
-  '@rollup/rollup-darwin-arm64@4.52.3': {}
-
   '@rollup/rollup-darwin-x64@4.50.2':
     optional: true
 
@@ -5762,10 +5771,10 @@ snapshots:
 
   '@sap/cds-dk@9.3.2(@eslint/js@9.36.0)(tar@7.5.1)':
     dependencies:
-      '@cap-js/asyncapi': 1.0.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
-      '@cap-js/openapi': 1.2.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
+      '@cap-js/asyncapi': 1.0.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))
+      '@cap-js/openapi': 1.2.3(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))
       '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
-      '@sap/cds-mtxs': 3.3.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(hdb@0.19.12)
+      '@sap/cds-mtxs': 3.3.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(hdb@0.19.12)
       '@sap/hdi-deploy': 5.5.0(hdb@0.19.12)
       axios: 1.12.2(debug@4.4.1)
       express: 4.21.2
@@ -5777,7 +5786,7 @@ snapshots:
       xml-js: 1.6.11
       yaml: 2.8.1
     optionalDependencies:
-      '@cap-js/sqlite': 2.0.2(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))
+      '@cap-js/sqlite': 2.0.2(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))
     transitivePeerDependencies:
       - '@eslint/js'
       - '@sap/hana-client'
@@ -5792,9 +5801,14 @@ snapshots:
       '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
       express: 4.21.2
 
-  '@sap/cds-mtxs@3.3.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1))(hdb@0.19.12)':
+  '@sap/cds-fiori@2.0.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(express@5.1.0)':
     dependencies:
-      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@4.21.2)(tar@7.5.1)
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
+      express: 5.1.0
+
+  '@sap/cds-mtxs@3.3.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(hdb@0.19.12)':
+    dependencies:
+      '@sap/cds': 9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)
       '@sap/hdi-deploy': 5.5.0(hdb@0.19.12)
     transitivePeerDependencies:
       - '@sap/hana-client'
@@ -5809,6 +5823,16 @@ snapshots:
       js-yaml: 4.1.0
     optionalDependencies:
       express: 4.21.2
+      tar: 7.5.1
+
+  '@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1)':
+    dependencies:
+      '@eslint/js': 9.36.0
+      '@sap/cds-compiler': 6.3.6
+      '@sap/cds-fiori': 2.0.1(@sap/cds@9.3.1(@eslint/js@9.36.0)(express@5.1.0)(tar@7.5.1))(express@5.1.0)
+      js-yaml: 4.1.0
+    optionalDependencies:
+      express: 5.1.0
       tar: 7.5.1
 
   '@sap/e2e-trace@5.4.0':
@@ -5909,24 +5933,11 @@ snapshots:
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
 
-  '@types/express-serve-static-core@5.0.7':
-    dependencies:
-      '@types/node': 24.5.2
-      '@types/qs': 6.14.0
-      '@types/range-parser': 1.2.7
-      '@types/send': 0.17.5
-
   '@types/express@4.17.23':
     dependencies:
       '@types/body-parser': 1.19.6
       '@types/express-serve-static-core': 4.19.6
       '@types/qs': 6.14.0
-      '@types/serve-static': 1.15.8
-
-  '@types/express@5.0.3':
-    dependencies:
-      '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 5.0.7
       '@types/serve-static': 1.15.8
 
   '@types/http-errors@2.0.5': {}
@@ -6191,7 +6202,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.8.8
       caniuse-lite: 1.0.30001745
-      electron-to-chromium: 1.5.225
+      electron-to-chromium: 1.5.226
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.2)
 
@@ -6484,7 +6495,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.225: {}
+  electron-to-chromium@1.5.226: {}
 
   emoji-regex@8.0.0: {}
 
@@ -6675,7 +6686,7 @@ snapshots:
       router: 2.2.0
       send: 1.2.0
       serve-static: 2.2.0
-      statuses: 2.0.1
+      statuses: 2.0.2
       type-is: 2.0.1
       vary: 1.1.2
     transitivePeerDependencies:
@@ -6731,6 +6742,8 @@ snapshots:
 
   fetch-retry@6.0.0: {}
 
+  fetch-to-node@2.1.0: {}
+
   figures@6.1.0:
     dependencies:
       is-unicode-supported: 2.1.0
@@ -6774,7 +6787,7 @@ snapshots:
       escape-html: 1.0.3
       on-finished: 2.4.1
       parseurl: 1.3.3
-      statuses: 2.0.1
+      statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -7940,7 +7953,7 @@ snapshots:
       ms: 2.1.3
       on-finished: 2.4.1
       range-parser: 1.2.1
-      statuses: 2.0.1
+      statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -8037,6 +8050,8 @@ snapshots:
   statuses@1.5.0: {}
 
   statuses@2.0.1: {}
+
+  statuses@2.0.2: {}
 
   strict-uri-encode@2.0.0: {}
 

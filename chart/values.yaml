@@ -228,6 +228,8 @@ mastra:
     DATABASE_DIR: .
     # # # # POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
     pg: "false"
+    CDS_REQUIRES_AUTH_KIND: "ias"
+    CDS_REQUIRES_DESTINATIONS_KIND: "destinations"
     # for now we only use remote libsql for sync vector
     # LIBSQL_DATABASE_URL: "libsql://v1-libsql:8080"
     # to be setup with ias bound credentials
