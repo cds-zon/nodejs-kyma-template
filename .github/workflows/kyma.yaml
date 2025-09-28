@@ -108,9 +108,10 @@ jobs:
         env:
           RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
         
-      # if we did not build containers, we need to build the cds project for helm deployment
+      # Always build the CDS project for helm deployment (needed for chart dependencies)
       - run: pnpm build
-        if: inputs.containers == false
+        env:
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
       - run: helm upgrade $RELEASE_VERSION ./gen/chart --install --namespace devspace --set global.image.tag=$RELEASE_VERSION
         if: inputs.helm == true
