@@ -6,6 +6,7 @@ import { evaluationAgent } from './agents/evaluationAgent';
 import { reportAgent } from './agents/reportAgent';
 import { researchAgent } from './agents/researchAgent';
 import { webSummarizationAgent } from './agents/webSummarizationAgent';
+import { developerAgent } from './agents/developerAgent';
 import { generateReportWorkflow } from './workflows/generateReportWorkflow';
 import { env } from 'process';
 import {MessageListInput} from "@mastra/core/agent/message-list";
@@ -54,6 +55,7 @@ export const mastra = new Mastra({
     evaluationAgent,
     learningExtractionAgent,
     webSummarizationAgent,
+    developerAgent,
   },
   
    workflows: { generateReportWorkflow, researchWorkflow },
