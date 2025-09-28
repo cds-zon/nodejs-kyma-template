@@ -36,3 +36,13 @@ gen/
 
 # Ignore DevSpace cache and log folder
 .devspace/
+
+
+output.txt
+node_modules
+dist
+.mastra
+.env.development
+.env
+*.db
+*.db-*

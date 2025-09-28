@@ -78,7 +78,7 @@ export function getStorage(dbName: string) {
         })
         :
         new LibSQLStore({
-            url: `file:${env.DATABASE_DIR}/${dbName}.db`,
+            url: `file:${env.DATABASE_DIR ?? ''}${dbName}.db`,
         })
 }
 
@@ -96,7 +96,7 @@ function getVector(dbName: string) {
         })
         :
         new LibSQLVector({
-            connectionUrl: `file:${env.DATABASE_DIR}/${dbName}.db`,
+            connectionUrl: `file:${env.DATABASE_DIR ?? ''}${dbName}.db`,
             syncUrl: env.SYNC_URL 
         })
 }

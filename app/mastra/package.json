@@ -24,19 +24,24 @@
     "@mastra/libsql": "^0.14.0",
     "@mastra/loggers": "^0.10.11",
     "@mastra/mcp": "^0.13.1",
-    "@mastra/memory":"0.15.3" ,
+    "@mastra/memory": "0.15.3",
     "@mastra/pg": "^0.16.1",
     "@sap/cds": "^9",
     "ai": "^5.0.15",
     "exa-js": "^1.8.27",
     "mastra": "0.13.2",
-    "zod": "^3.25.67"
+    "zod": "^3.25.67",
+
+    "@anush008/tokenizers": "^0.0.0",
+    "@libsql/darwin-arm64": "^0.5.22",
+    "@rollup/rollup-darwin-arm64": "^4.50.2"
+
   },
   "devDependencies": {
-    "@types/node": "^24.0.3",
-    "typescript": "^5.8.3",
     "@cap-js/cds-typer": ">=0.1",
-    "@cap-js/cds-types": "^0.14.0"
-  
+    "@cap-js/cds-types": "^0.14.0",
+    "@types/node": "^24.0.3",
+    "tsx": "^4",
+    "typescript": "^5.8.3"
   }
 }
