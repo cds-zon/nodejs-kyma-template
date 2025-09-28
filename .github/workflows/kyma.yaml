@@ -34,9 +34,20 @@ jobs:
       image: sapmachine:ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+  
       - uses: ./.github/actions/kyma-setup
         with:
           registry: ${{ vars.DOCKER_REGISTRY }}
@@ -44,7 +55,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
           
-      - run: npm install --omit=optional
       
       - name: Set release version
         shell: bash
@@ -89,13 +99,13 @@ jobs:
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "Release version set to: $VERSION"
         
-      - run: npm run build:containers -- --push 
+      - run: pnpm build:containers -- --push 
         if: inputs.containers == true
         env:
           RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
         
       # if we did not build containers, we need to build the cds project for helm deployment
-      - run: npx cds build --production
+      - run: pnpm build
         if: inputs.containers == false
 
       - run: helm upgrade $RELEASE_VERSION ./gen/chart --install --namespace devspace --set global.image.tag=$RELEASE_VERSION
