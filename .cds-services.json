@@ -2,10 +2,28 @@
   "cds": {
     "requires": {
       "auth": {
-        "kind": "ias-auth"
+        "kind": "ias"
       },
       "destinations": {
         "kind": "destinations"
+      },
+      "mcp-server": {
+        "kind": "mcp-server",
+        "credentials": {
+          "url": "https://rado-cf-mcp-server-1.c-127c9ef.stage.kyma.ondemand.com"
+        }
+      },
+      "mcp-guard": {
+        "kind": "mcp-guard",
+        "credentials": {
+          "url": "https://rado-aiam-mcp-guard.c-127c9ef.stage.kyma.ondemand.com"
+        }
+      },
+      "mcp-guard-cert": {
+        "kind": "mcp-guard",
+        "credentials": {
+          "url": "https://rado-aiam-mcp-guard.cert.c-127c9ef.stage.kyma.ondemand.com"
+        }
       }
     }
   }

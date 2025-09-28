@@ -16,6 +16,7 @@
       "csrfProtection": false,
       "authenticationType": "ias"
     },
+  
     {
       "source": "^/user-api(.*)",
       "target": "$1",
@@ -38,6 +39,9 @@
       "authenticationType": "ias"
     }
   ],
+  "websockets": {
+    	"enabled": true
+  	},
   "login": {
     "callbackEndpoint": "/login/callback?authType=ias"
   },

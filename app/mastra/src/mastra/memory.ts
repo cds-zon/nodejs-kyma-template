@@ -3,7 +3,8 @@ import {LibSQLStore, LibSQLVector} from "@mastra/libsql";
 import { fastembed } from "@mastra/fastembed";
 import {env} from "process";
 import {PostgresStore, PgVector} from "@mastra/pg";
-import { fs } from "@sap/cds/lib/utils/cds-utils";
+// import { fs } from "@sap/cds/lib/utils/cds-utils";
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 
 
 
@@ -50,7 +51,7 @@ export const memory = new Memory({
 function getStorageParameters() {
     const services = JSON.parse(env.VCAP_SERVICES || "{}");
     const bindingFile="/bindings/db/credentials"
-    const binding=fs.existsSync(bindingFile) ? JSON.parse(fs.readFileSync(bindingFile, "utf8")) : null;
+    const binding=existsSync(bindingFile) ? JSON.parse(readFileSync(bindingFile, "utf8")) : null;
     const pgUrl=  env.pg === "true" ? (binding?.uri || services["postgresql-db"]?.[0]?.credentials?.uri) : null;
     const libsqlUrl = env.LIBSQL_DATABASE_URL;
     const libsqlToken = env.LIBSQL_AUTH_TOKEN;
@@ -78,7 +79,7 @@ export function getStorage(dbName: string) {
         })
         :
         new LibSQLStore({
-            url: `file:${env.DATABASE_DIR}/${dbName}.db`,
+            url: `file:${env.DATABASE_DIR ?? ''}${dbName}.db`,
         })
 }
 
@@ -96,7 +97,7 @@ function getVector(dbName: string) {
         })
         :
         new LibSQLVector({
-            connectionUrl: `file:${env.DATABASE_DIR}/${dbName}.db`,
+            connectionUrl: `file:${env.DATABASE_DIR ?? ''}${dbName}.db`,
             syncUrl: env.SYNC_URL 
         })
 }

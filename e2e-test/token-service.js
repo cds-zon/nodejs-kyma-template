@@ -1,7 +1,10 @@
-import { IdentityService } from "@sap/xssec";
+import { IdentityService, createSecurityContext, SECURITY_CONTEXT, errors } from "@sap/xssec";
 import cds from "@sap/cds";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+
+const { ValidationError } = errors;
+
 
 var credentials = cds.env.requires.auth.credentials;
 const authService = new IdentityService(credentials);

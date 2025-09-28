@@ -10,6 +10,11 @@ import { generateReportWorkflow } from './workflows/generateReportWorkflow';
 import { env } from 'process';
 import {MessageListInput} from "@mastra/core/agent/message-list";
 import { getStorage } from './memory';
+// import { cdsAuthProvider, MastraAuthCds } from './auth/cds-auth-provider';
+import { Hono } from 'hono';
+import authProvider from './auth';
+// import { cdsAuthProvider } from './auth/cds-auth-provider';
+// import { authenticationMiddleware, authorizationMiddleware } from '@mastra/core';
 
 function parseHeaders(headerString: string): Record<string, string> {
   return headerString.split(",").reduce((acc, header) => {
@@ -36,7 +41,9 @@ const otelConfig: OtelConfig = {
     headers:  parseHeaders(env.OTEL_EXPORTER_OTLP_HEADERS || ""),
   },
 };
-
+const app = new Hono();
+// app.use('*', authenticationMiddleware as any);
+// app.use('*', authorizationMiddleware as any);
 
 export const mastra = new Mastra({
   telemetry: otelConfig, 
@@ -48,8 +55,14 @@ export const mastra = new Mastra({
     learningExtractionAgent,
     webSummarizationAgent,
   },
+  
    workflows: { generateReportWorkflow, researchWorkflow },
    server: { 
+    build: {
+      openAPIDocs: true,
+      swaggerUI: true,
+      apiReqLogs: true,
+    },
     host: env.HOST || "0.0.0.0",
     port: env.PORT ? parseInt(env.PORT) : 4111,
     cors: {
@@ -57,7 +70,15 @@ export const mastra = new Mastra({
       allowMethods: ["*"],
       allowHeaders: ["*"]
     },
-    
+    experimental_auth: {
+      name: "cds",
+      protected: [
+        "/api/*",
+        "/user/*",
+        "/chat/*"
+      ],
+      ...authProvider,
+    }, 
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
@@ -65,12 +86,14 @@ export const mastra = new Mastra({
         createHandler: async ({ mastra }) => { 
           return async c=> {
             const {messages} = await c.req.json< {messages:MessageListInput}>() ;
+            
             const stream=await mastra.getAgent("researchAgent").streamVNext(messages,{
               format:"aisdk",
               savePerStep:true,
               memory: {
-                resource: c.req.header("X-Resource-Id") || "default",
-                thread: c.req.header("X-Thread-Id") || "default",
+                resource: c.get("user")?.id || "default",
+                //tbd
+                thread: c.get("thread")?.id || "default",
                
               }
             });
@@ -87,7 +110,31 @@ export const mastra = new Mastra({
         handler: async (c) => {
           return c.text("OK");
         },
-      }
+      },
+
+      // User info endpoint that uses CDS context
+      {
+        path: "/user/me",
+        method: "GET",
+        requiresAuth: true,
+        handler: async (c) => {
+          const user = c.get('runtimeContext')?.get('user'); // From experimental_auth
+          
+          return c.json({
+            id: user?.id,
+            name: user?.attr?.name || `${user?.attr?.given_name || ''} ${user?.attr?.family_name || ''}`.trim(),
+            email: user?.attr?.email,
+            tenant: user?.tenant,
+            roles: user?.roles,
+            attributes: user?.attr,
+            timestamp: new Date().toISOString(),
+            source: 'mastra-cds-direct-auth'
+          });
+        },
+      },
+
+      // Protected chat endpoint that includes user context
+     
     ]
   },
 
