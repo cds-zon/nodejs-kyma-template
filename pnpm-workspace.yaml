@@ -5,3 +5,11 @@ onlyBuiltDependencies:
   - '@cap-js/cds-types'
   - better-sqlite3
   - esbuild
+
+syncInjectedDepsAfterScripts:
+- build
+injectWorkspacePackages: true
+
+
+
+     

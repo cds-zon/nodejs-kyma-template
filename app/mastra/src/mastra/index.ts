@@ -10,7 +10,10 @@ import { generateReportWorkflow } from './workflows/generateReportWorkflow';
 import { env } from 'process';
 import {MessageListInput} from "@mastra/core/agent/message-list";
 import { getStorage } from './memory';
-import iasAuth from './middleware/auth';
+import { cdsAuthProvider, MastraAuthCds } from './auth/cds-auth-provider';
+import { Hono } from 'hono';
+// import { authenticationMiddleware, authorizationMiddleware } from '@mastra/core';
+
 function parseHeaders(headerString: string): Record<string, string> {
   return headerString.split(",").reduce((acc, header) => {
     const [key, value] = header.split("=").map((s) => s.trim());
@@ -36,6 +39,10 @@ const otelConfig: OtelConfig = {
     headers:  parseHeaders(env.OTEL_EXPORTER_OTLP_HEADERS || ""),
   },
 };
+const app = new Hono();
+// app.use('*', authenticationMiddleware as any);
+// app.use('*', authorizationMiddleware as any);
+
 export const mastra = new Mastra({
   telemetry: otelConfig, 
   storage: getStorage("mastra"), 
@@ -49,6 +56,11 @@ export const mastra = new Mastra({
   
    workflows: { generateReportWorkflow, researchWorkflow },
    server: { 
+    build: {
+      openAPIDocs: true,
+      swaggerUI: true,
+      apiReqLogs: true,
+    },
     host: env.HOST || "0.0.0.0",
     port: env.PORT ? parseInt(env.PORT) : 4111,
     cors: {
@@ -56,9 +68,39 @@ export const mastra = new Mastra({
       allowMethods: ["*"],
       allowHeaders: ["*"]
     },
-    middleware: [
-      iasAuth,
-    ],
+    experimental_auth: {
+      name: "cds",
+      protected: [
+        "/*"
+      ],
+      authorizeUser: cdsAuthProvider.authorizeUser.bind(cdsAuthProvider),
+      authenticateToken: cdsAuthProvider.authenticateToken.bind(cdsAuthProvider),
+    },
+    // middleware: [
+    //   {
+    //     path: "*",
+    //     handler: async (c, next) => {
+    //         console.log('before handler',{
+    //           // authConfig: c.get('mastra').getServer()?.experimental_auth,
+    //           customRouteAuthConfig: c.get('customRouteAuthConfig')?.[c.req.path],
+    //           user:c.get('user'),
+    //           runtimeContext: c.get('runtimeContext'),
+    //         });
+    //         c.get('customRouteAuthConfig')[c.req.path] = true;
+    //         await next();
+
+    //         console.log('after handler',{
+    //           // mastra: c.get('mastra'),
+    //           // authConfig: c.get('mastra').getServer()?.experimental_auth,
+    //           customRouteAuthConfig: c.get('customRouteAuthConfig')?.[c.req.path],
+    //           user:c.get('user'),
+    //           runtimeContext: c.get('runtimeContext'),
+    //         });
+          
+    //     }
+        
+    //   }
+    // ],
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
@@ -90,19 +132,16 @@ export const mastra = new Mastra({
         },
       },
 
-      // User info endpoint that uses the auth middleware
+      // User info endpoint that uses Mastra auth
       {
         path: "/user/me",
         method: "GET",
+        requiresAuth: true,
         handler: async (c) => {
-          const user = c.get('user');
-          const securityContext = c.get('securityContext');
-          console.log('user', user,securityContext);
           return c.json({
-            user,
-            hasSecurityContext: !!securityContext,
+            ...c.get('runtimeContext')?.get('user') ||{},
             timestamp: new Date().toISOString(),
-            source: 'mastra-auth-middleware'
+            source: 'mastra-cds-auth-provider'
           });
         },
       },
@@ -111,6 +150,7 @@ export const mastra = new Mastra({
       {
         path: "/chat/protected",
         method: "POST",
+        requiresAuth: true,
         handler: async (c) => {
           const user = c.get('user');
           const { messages } = await c.req.json<{ messages: MessageListInput }>();
@@ -125,7 +165,7 @@ export const mastra = new Mastra({
               format: "aisdk",
               savePerStep: true,
               memory: {
-                resource: user.id || "anonymous",
+                resource: user?.id || "anonymous",
                 thread: c.req.header("X-Thread-Id") || "default",
               }
             });

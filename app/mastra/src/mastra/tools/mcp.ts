@@ -1,6 +1,8 @@
 import { MCPClient } from '@mastra/mcp';
 import { env } from 'process';
-
+///https://rado-cf-mcp-server-1.c-127c9ef.stage.kyma.ondemand.com
+//https://rado-aiam-mcp-guard.c-127c9ef.stage.kyma.ondemand.com 
+//https://rado-aiam-mcp-guard.cert.c-127c9ef.stage.kyma.ondemand.com
 // Function to get MCP server URL from various sources
 function getMCPServerUrl(): string {
   // Check environment variable first
@@ -37,12 +39,12 @@ function getMCPServerUrl(): string {
 
   // Default fallback - for development
   console.log('Using default MCP server URL - configure MCP_SERVER_URL environment variable for production');
-  return "http://localhost:3000/mcp";
+  return "https://gitmcp.io/zon-cx/mcp-identity"
 }
 
 export const mcpClient = new MCPClient({
   id: `mastra-mcp-${Date.now()}`, // Unique ID to prevent multiple initialization error
-  servers: {
+  servers: { 
      tools: { 
       url: new URL(getMCPServerUrl()),
       requestInit: {

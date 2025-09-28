@@ -47,6 +47,7 @@ export const researchAgent = new Agent({
 
   Use all the tools available to you systematically and stop after the follow-up phase.
   `,
+  
   model: mainModel,
   tools: async ({ runtimeContext, mastra })=> ({
     // webSearchTool,
