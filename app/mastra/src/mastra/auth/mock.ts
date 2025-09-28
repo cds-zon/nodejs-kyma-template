@@ -11,9 +11,7 @@ export class MockProvider implements MastraAuthProvider {
   private users: Record<string, cds.User>;
   private tenants: Record<string, any>;
 
-  constructor(options?: any) {
-    // Use CDS auth configuration if available
-    const authConfig = options || cds.requires?.auth || {};
+  constructor(authConfig: typeof cds.requires.auth = cds.requires.auth) {
     this.tenants = authConfig.tenants || {};
     const configuredUsers = authConfig.users || {};
 
@@ -25,8 +23,8 @@ export class MockProvider implements MastraAuthProvider {
       if (typeof v === 'string') v = { password: v };
       
       let id = this._configured(v as any).id || k;
-      let user = this.users[id] = new cds.User({ id, ...v });
-      let fts = this.tenants[user.tenant]?.features;
+      let user = this.users[id] = new cds.User({ id, ...(v as any) });
+      let fts = user.tenant && this.tenants[user.tenant]?.features;
       if (fts && !(user as any).features) (user as any).features = fts;
     }
 
@@ -126,7 +124,6 @@ export class MockProvider implements MastraAuthProvider {
     return {
       'alice': new cds.User({
         id: 'alice',
-        password: 'alice',
         roles: ['authenticated-user', 'admin'],
         tenant: 't1',
         attr: {
@@ -138,15 +135,13 @@ export class MockProvider implements MastraAuthProvider {
       }),
       'bob': new cds.User({
         id: 'bob',
-        password: 'bob',
         roles: ['authenticated-user'],
         tenant: 't2',
         attr: {
           name: 'Bob',
           email: 'bob@example.com'
         }
-      }),
-      '*': new cds.User({ id: '*' }) // Allow any user
+      })
     };
   }
 }
