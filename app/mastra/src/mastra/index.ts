@@ -12,7 +12,7 @@ import {MessageListInput} from "@mastra/core/agent/message-list";
 import { getStorage } from './memory';
 // import { cdsAuthProvider, MastraAuthCds } from './auth/cds-auth-provider';
 import { Hono } from 'hono';
-import { cdsDirectAuthProvider } from './auth/ias';
+import authProvider from './auth';
 // import { cdsAuthProvider } from './auth/cds-auth-provider';
 // import { authenticationMiddleware, authorizationMiddleware } from '@mastra/core';
 
@@ -73,37 +73,12 @@ export const mastra = new Mastra({
     experimental_auth: {
       name: "cds",
       protected: [
-        "/*"
+        "/api/*",
+        "/user/*",
+        "/chat/*"
       ],
-      authorizeUser: cdsDirectAuthProvider.authorizeUser.bind(cdsDirectAuthProvider),
-      authenticateToken: cdsDirectAuthProvider.authenticateToken.bind(cdsDirectAuthProvider),
-    },
-    // No middleware needed - using experimental_auth instead
-    // middleware: [
-    //   {
-    //     path: "*",
-    //     handler: async (c, next) => {
-    //         console.log('before handler',{
-    //           // authConfig: c.get('mastra').getServer()?.experimental_auth,
-    //           customRouteAuthConfig: c.get('customRouteAuthConfig')?.[c.req.path],
-    //           user:c.get('user'),
-    //           runtimeContext: c.get('runtimeContext'),
-    //         });
-    //         c.get('customRouteAuthConfig')[c.req.path] = true;
-    //         await next();
-
-    //         console.log('after handler',{
-    //           // mastra: c.get('mastra'),
-    //           // authConfig: c.get('mastra').getServer()?.experimental_auth,
-    //           customRouteAuthConfig: c.get('customRouteAuthConfig')?.[c.req.path],
-    //           user:c.get('user'),
-    //           runtimeContext: c.get('runtimeContext'),
-    //         });
-          
-    //     }
-        
-    //   }
-    // ],
+      ...authProvider,
+    }, 
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
