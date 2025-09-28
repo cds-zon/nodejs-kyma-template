@@ -27,14 +27,6 @@ modules:
         - cp -r app/router gen/chart/router
         - docker pull sapse/approuter:20.7.0
         - docker tag sapse/approuter:20.7.0 router/approuter:${RELEASE_VERSION:-v1}
-  - name: v1-approuter
-    build-parameters:
-      buildpack:
-        type: nodejs
-        builder: builder-jammy-base
-        path: app/router
-        env:
-          BP_NODE_RUN_SCRIPTS: ""
 
 #      buildpack:
 #        type: nodejs
