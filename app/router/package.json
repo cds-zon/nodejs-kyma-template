@@ -5,6 +5,6 @@
   },
   "scripts": {
     "start": "node node_modules/@sap/approuter/approuter.js",
-    "build": "cp . gen/chart/router/"
+    "build": "rsync -av --exclude node_modules . ../../gen/chart/router/"
   }
 }

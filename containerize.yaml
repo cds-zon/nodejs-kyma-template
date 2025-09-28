@@ -5,7 +5,6 @@ tag: "${RELEASE_VERSION:-v1}"
 before-all:
   - export TARGETPLATFORM=linux/amd64
   - npx cds build --production
-  - cp -r app/router gen/chart/router
 
 after-all:
   - echo "Build complete with release version: ${RELEASE_VERSION:-v1}"

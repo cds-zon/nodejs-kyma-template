@@ -7,6 +7,7 @@
   "@sap/approuter": "^20.7.1",
   "@sap/cds": "^9",
   "@sap/xssec": "^4.9.1",
+  "axios": "^1.12.2",
   "express": "^4",
   "hono": "^4.9.9",
   "jwt-decode": "^4.0.0"
@@ -33,7 +34,7 @@
   "hybrid:mastra": "npx cds bind --profile hybrid --exec -- npm run dev -w app/mastra",
   "hybrid:cds": "npx cds bind --exec -- cds serve",
   "serve:approuter": "node node_modules/@sap/approuter/approuter.js  --workingDir chart/router --port 9000 ",
-  "build": "npx cds build --production && cp -r app/router gen/chart/router",
+  "build": "npx cds build --production ",
   "build:containers": "ctz containerize.yaml --log",
   "build:push": "ctz containerize.yaml --log --push",
   "bind:postgres": "npx cds bind db --to v1-mastra-db --on k8s",
