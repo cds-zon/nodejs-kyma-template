@@ -1,0 +1,31 @@
+{
+  "name": "developer-agent-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for the Developer Agent deployment",
+  "main": "run-developer-agent-tests.js",
+  "scripts": {
+    "test": "node run-developer-agent-tests.js",
+    "test:playwright": "playwright test developer-agent-functional.test.spec.js --reporter=list",
+    "test:evals": "vitest run developer-agent-evals.test.spec.js",
+    "test:mastra-evals": "vitest run developer-agent-mastra-evals.test.ts",
+    "test:all-evals": "vitest run --reporter=verbose",
+    "test:manual": "node -e \"require('./run-developer-agent-tests.js').runManualTests()\"",
+    "install-playwright": "npx playwright install"
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "developer-agent",
+    "mastra",
+    "kyma"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@vitest/ui": "^3.2.4",
+    "node-fetch": "^2.6.7",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
