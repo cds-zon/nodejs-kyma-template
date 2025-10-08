@@ -38,10 +38,14 @@ var mastra =builder
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithOtlpExporter();
+ 
 
-
-
-
-
+var approuter = builder
+    .AddExecutable("router", "npm", "..",  "run", "hybrid:approuter")
+    .WaitFor(mastra)
+    .WithHttpEndpoint(env: "PORT",   port: 5000)
+    .WithExternalHttpEndpoints()
+    .WithEnvironment("destinations", $"[{{\"name\":\"mastra-api\",\"url\":\"{mastra.GetEndpoint("http")}\",\"forwardAuthToken\":true}}]")
+    .WithOtlpExporter();
 
 builder.Build().Run();
