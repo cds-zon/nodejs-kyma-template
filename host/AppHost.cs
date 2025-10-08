@@ -40,12 +40,39 @@ var mastra =builder
     .WithOtlpExporter();
  
 
-var approuter = builder
-    .AddExecutable("router", "npm", "..",  "run", "hybrid:approuter")
+var mastraApp = builder
+    .AddExecutable("mastra-app", "npm", "..",  "run", "hybrid:approuter")
     .WaitFor(mastra)
     .WithHttpEndpoint(env: "PORT",   port: 5000)
     .WithExternalHttpEndpoints()
     .WithEnvironment("destinations", $"[{{\"name\":\"mastra-api\",\"url\":\"{mastra.GetEndpoint("http")}\",\"forwardAuthToken\":true}}]")
     .WithOtlpExporter();
+
+mastra.WithParentRelationship(mastraApp);
+
+var assistant =builder
+    .AddExecutable("assistant", "npm", "..", "run", "hybrid:assistant")
+    .WaitFor(mastraApp)    
+    .WithExternalHttpEndpoints() 
+    .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
+    .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
+    .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
+    .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
+    .WithEnvironment("NEXT_PUBLIC_ASSISTANT_BASE_URL", $"{mastraApp.GetEndpoint("http")}/chat")
+    .WithHttpEndpoint(env: "PORT" , port: 4362)
+    .WithExternalHttpEndpoints()
+    .WithOtlpExporter();
+
+var assistantApp = builder
+    .AddExecutable("assistant-app", "npm", "..",  "run", "hybrid:approuter")
+    .WaitFor(assistant)
+    .WithHttpEndpoint(env: "PORT",   port: 5001)
+    .WithExternalHttpEndpoints()
+    .WithEnvironment("destinations", $"[{{\"name\":\"assistant-api\",\"url\":\"{assistant.GetEndpoint("http")}\",\"forwardAuthToken\":true}}]")
+    .WithOtlpExporter();
+
+assistant.WithParentRelationship(assistantApp);
+
+
 
 builder.Build().Run();
