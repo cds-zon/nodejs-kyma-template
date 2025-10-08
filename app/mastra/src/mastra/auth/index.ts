@@ -25,9 +25,12 @@ const providers: Record<ProviderType, Pick<MastraAuthProvider<cds.User>, "authen
 }
 
 const which = providers[cds.requires.auth.kind];
+console.log('🔐 Mastra Auth Provider:', cds.requires.auth.kind);
 
-
-export default  {
-  authenticateToken: which.authenticateToken.bind(which),
-  authorizeUser: which.authorizeUser.bind(which)
+export default class CDSAuthProvider extends MastraAuthProvider<cds.User> {
+  constructor() {
+    super({ name: 'cds', authorizeUser: which.authorizeUser.bind(which) });
+  }
+  authenticateToken = which.authenticateToken.bind(which);
+  authorizeUser = which.authorizeUser.bind(which);
 } 

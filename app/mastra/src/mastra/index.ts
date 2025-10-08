@@ -13,7 +13,9 @@ import {MessageListInput} from "@mastra/core/agent/message-list";
 import { getStorage } from './memory';
 // import { cdsAuthProvider, MastraAuthCds } from './auth/cds-auth-provider';
 import { Hono } from 'hono';
-import authProvider from './auth';
+import AuthProvider from './auth';
+import CDSAuthProvider from './auth';
+import { authMiddleware } from './middleware/auth';
 // import { cdsAuthProvider } from './auth/cds-auth-provider';
 // import { authenticationMiddleware, authorizationMiddleware } from '@mastra/core';
 
@@ -72,15 +74,8 @@ export const mastra = new Mastra({
       allowMethods: ["*"],
       allowHeaders: ["*"]
     },
-    experimental_auth: {
-      name: "cds",
-      protected: [
-        "/api/*",
-        "/user/*",
-        "/chat/*"
-      ],
-      ...authProvider,
-    }, 
+    middleware: [authMiddleware],
+    experimental_auth:new AuthProvider(), 
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
@@ -120,8 +115,9 @@ export const mastra = new Mastra({
         method: "GET",
         requiresAuth: true,
         handler: async (c) => {
-          const user = c.get('runtimeContext')?.get('user'); // From experimental_auth
-          
+          console.log('🔐 User info endpoint', c.get('user'));
+          const user = c.get('user'); // From experimental_auth
+          console.log('🔐 User info endpoint - User:', user);
           return c.json({
             id: user?.id,
             name: user?.attr?.name || `${user?.attr?.given_name || ''} ${user?.attr?.family_name || ''}`.trim(),

@@ -46,3 +46,6 @@ dist
 .env
 *.db
 *.db-*
+
+bin/
+obj/

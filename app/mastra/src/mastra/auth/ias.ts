@@ -19,7 +19,7 @@ export class CDSDirectAuth {
   constructor(authConfig: typeof cds.requires.auth = cds.requires.auth) {
     this.credentials = authConfig.credentials;
         this.authService = new IdentityService(this.credentials);
-        console.log('✅ IAS Auth Service initialized');
+        console.log('✅ IAS Auth Service initialized' );
    
   }
 
@@ -32,6 +32,7 @@ export class CDSDirectAuth {
 
     const roles: string[] = getRoles(securityContext, this.credentials); 
 
+    console.log('🔐 IAS Auth Service - Authenticate Token:', sub, aud, roles, attr);
     
     return new CDSUser({
       id: sub || 'unknown',
@@ -50,6 +51,7 @@ export class CDSDirectAuth {
    * Authorize a user (always returns true for now)
    */
   public async authorizeUser(user: CDSUser): Promise<boolean> {
+    console.log('🔐 IAS Auth Service - Authorize User:', user);
     return user != null;
   }
   
