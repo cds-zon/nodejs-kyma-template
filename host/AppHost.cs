@@ -6,12 +6,12 @@ using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using static Aspire.Hosting.InputType;
+using System.Text.Json;
 const string dashboardOtlpHttpEndpointUrl = "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL";
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-
-var aiCoreCredentials = builder.AddParameter("ai-core-key", secret:true)
+var aiCoreCredentials = builder.AddParameter("ai-core-key", secret: true)
     .WithDescription("SAP AI Core credentials JSON (upload or paste)")
     .WithCustomInput(p => new()
     {
@@ -24,55 +24,146 @@ var aiCoreCredentials = builder.AddParameter("ai-core-key", secret:true)
 
 var aiCoreProxy = builder.AddContainer("ai-core-proxy", "llm/sap-ai-proxy:latest")
     .WithImageRegistry("scai-dev.common.repositories.cloud.sap")
-    .WithHttpEndpoint(env: "PORT" , port: 3002, targetPort: 3002)
+    .WithHttpEndpoint(env: "PORT", port: 3002, targetPort: 4000)
     .WithEnvironment("AICORE_CONFIG", aiCoreCredentials)
     .WithEnvironment("AICORE_RESOURCE_GROUP", "default")
     .WithOtlpExporter();
 
-var mastra =builder
+var mastra = builder
     .AddExecutable("mastra", "npm", "..", "run", "hybrid:mastra")
-    .WaitFor(aiCoreProxy)    
-    .WithHttpEndpoint(env: "PORT" ,  port: 4111)
-    .WithExternalHttpEndpoints()
-
+    .WaitFor(aiCoreProxy)
+    .WithHttpEndpoint(env: "PORT", port: 3001, targetPort: 4001)
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithOtlpExporter();
- 
+
+Console.WriteLine(mastra.GetEndpoint("http").ToString());
 
 var mastraApp = builder
-    .AddExecutable("mastra-app", "npm", "..",  "run", "hybrid:approuter")
+    .AddExecutable("mastra-app", "npm", "..", "run", "hybrid:approuter" ,"--","--", "--port", "6001")
     .WaitFor(mastra)
-    .WithHttpEndpoint(env: "PORT",   port: 5000)
+    .WithHttpEndpoint(port: 5001, targetPort: 6001)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("destinations", $"[{{\"name\":\"mastra-api\",\"url\":\"{mastra.GetEndpoint("http")}\",\"forwardAuthToken\":true}}]")
-    .WithOtlpExporter();
+    .WithOtlpExporter()
+    .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
+    .WithEnvironment("DESTINATIONS", JsonSerializer.Serialize(new[]
+    {
+        new { name = "mastra-api", url = "http://localhost:4001", forwardAuthToken = true }
+    }))
+    .WithEnvironment("XS_APP_CONFIG", """"""
+        {
+            "authenticationMethod": "route",
+            "routes": [
+                {
+                "source": "^/favicon\\.(ico|svg|png|gif)$",
+                "target": "/favicon.$1",
+                "localDir": ".",
+                "cacheControl": "public, max-age=86400",
+                "csrfProtection": false
+                },
+                {
+                "source": "(.*)",
+                "target": "$1",
+                "destination": "mastra-api",
+                "csrfProtection": false,
+                "authenticationType": "ias"
+                }
+            ],
+            "websockets": {
+                "enabled": true
+            },
+            "login": {
+                "callbackEndpoint": "/login/callback?authType=ias"
+            },
+            "logout": {
+                "logoutEndpoint": "/logout",
+                "logoutPage": "/logout.html"
+            }
+        }
+
+    """""");
 
 mastra.WithParentRelationship(mastraApp);
 
-var assistant =builder
+var assistant = builder
     .AddExecutable("assistant", "npm", "..", "run", "hybrid:assistant")
-    .WaitFor(mastraApp)    
-    .WithExternalHttpEndpoints() 
+    .WaitFor(mastraApp)
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithEnvironment("NEXT_PUBLIC_ASSISTANT_BASE_URL", $"{mastraApp.GetEndpoint("http")}/chat")
-    .WithHttpEndpoint(env: "PORT" , port: 4362)
+    .WithHttpEndpoint(env: "PORT", port: 3002, targetPort: 4002)
     .WithExternalHttpEndpoints()
     .WithOtlpExporter();
 
+
 var assistantApp = builder
-    .AddExecutable("assistant-app", "npm", "..",  "run", "hybrid:approuter")
+    .AddExecutable("assistant-app", "npm", "..", "run", "hybrid:approuter" ,"--","--", "--port", "6002")
     .WaitFor(assistant)
-    .WithHttpEndpoint(env: "PORT",   port: 5001)
+    .WithHttpEndpoint(port: 5002, targetPort: 6002)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("destinations", $"[{{\"name\":\"assistant-api\",\"url\":\"{assistant.GetEndpoint("http")}\",\"forwardAuthToken\":true}}]")
-    .WithOtlpExporter();
+    .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
+    .WithEnvironment("DESTINATIONS", JsonSerializer.Serialize(new[]
+    {
+        new { name = "assistant-api", url = "http://localhost:4002", forwardAuthToken = true }
+    }))
+    .WithOtlpExporter()
+    .WithEnvironment("XS_APP_CONFIG", """"""    
+        {
+            "authenticationMethod": "route",
+            "routes": [
+                {
+                "source": "^/favicon\\.(ico|svg|png|gif)$",
+                "target": "/favicon.$1",
+                "localDir": ".",
+                "cacheControl": "public, max-age=86400",
+                "csrfProtection": false
+                },
+                {
+                "source": "(.*)",
+                "target": "$1",
+                "destination": "assistant-api",
+                "csrfProtection": false,
+                "authenticationType": "ias"
+                }
+            ],
+            "websockets": {
+                "enabled": true
+            },
+            "login": {
+                "callbackEndpoint": "/login/callback?authType=ias"
+            },
+            "logout": {
+                "logoutEndpoint": "/logout",
+                "logoutPage": "/logout.html"
+            }
+        }
+    """""")
+   ;
 
 assistant.WithParentRelationship(assistantApp);
 
 
-
 builder.Build().Run();
+
+
+
+/* //approuter with a container 
+ 
+var assistantApp = builder
+    .AddContainer("assistant-app", "sapse/approuter", "20.7.0")
+   .WithImageRegistry("docker.io")
+    .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
+    .WaitFor(assistant)
+    .WithHttpEndpoint(port: 5002, targetPort: 5000)
+    .WithExternalHttpEndpoints()
+    .WithBindMount("../app/assistant/xs-app.json", "/app/xs-app.json")
+    .WithBindMount("./default-env.json", "/app/default-env.json")
+    .WithLocalhostHostsFromHost()
+
+*/
+
+
+
+
