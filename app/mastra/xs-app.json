@@ -1,0 +1,52 @@
+{
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "source": "^/auth/test$",
+      "target": "/",
+      "localDir": ".",
+      "csrfProtection": false,
+      "cacheControl": "no-cache, no-store, must-revalidate",
+      "authenticationType": "ias"
+    },
+    {
+      "source": "^/auth/api/me",
+      "target": "/api/me",
+      "destination": "user-api",
+      "csrfProtection": false,
+      "authenticationType": "ias"
+    },
+  
+    {
+      "source": "^/user-api(.*)",
+      "target": "$1",
+      "csrfProtection": false,
+      "authenticationType": "ias",
+      "service": "sap-approuter-userapi"
+    },
+    {
+      "source": "^/favicon\\.(ico|svg|png|gif)$",
+      "target": "/favicon.$1",
+      "localDir": ".",
+      "cacheControl": "public, max-age=86400",
+      "csrfProtection": false
+    },
+    {
+      "source": "(.*)",
+      "target": "$1",
+      "destination": "mastra-api",
+      "csrfProtection": false,
+      "authenticationType": "ias"
+    }
+  ],
+  "websockets": {
+    	"enabled": true
+  	},
+  "login": {
+    "callbackEndpoint": "/login/callback?authType=ias"
+  },
+  "logout": {
+    "logoutEndpoint": "/logout",
+    "logoutPage": "/logout.html"
+  }
+}
