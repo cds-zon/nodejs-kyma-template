@@ -11,6 +11,7 @@ const string dashboardOtlpHttpEndpointUrl = "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+
 var aiCoreCredentials = builder.AddParameter("ai-core-key", secret: true)
     .WithDescription("SAP AI Core credentials JSON (upload or paste)")
     .WithCustomInput(p => new()
@@ -40,48 +41,26 @@ var mastra = builder
 Console.WriteLine(mastra.GetEndpoint("http").ToString());
 
 var mastraApp = builder
-    .AddExecutable("mastra-app", "npm", "..", "run", "hybrid:approuter" ,"--","--", "--port", "6001")
+    .AddContainer("mastra-app", "sapse/approuter", "20.7.0")
+    .WithImageRegistry("docker.io")
+    // .AddExecutable("mastra-app", "npm", "..", "run", "hybrid:approuter" ,"--","--", "--port", "6001")
     .WaitFor(mastra)
-    .WithHttpEndpoint(port: 5001, targetPort: 6001)
+    .WithHttpEndpoint(port: 5001, targetPort: 5000)
     .WithExternalHttpEndpoints()
     .WithOtlpExporter()
+    .WithBindMount(source:"./default-env.json", target: "/app/default-env.json")
     .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
-    .WithEnvironment("DESTINATIONS", JsonSerializer.Serialize(new[]
+    // .WithEnvironment("DESTINATION_HOST_PATTERN", "https://^(.*).euw.devtunnels.ms$")
+    .WithEnvironment("destinations", JsonSerializer.Serialize(new[]
     {
-        new { name = "mastra-api", url = "http://localhost:4001", forwardAuthToken = true }
+        new { name = "mastra-api", url = "https://h1q3hv0l-3001.euw.devtunnels.ms", forwardAuthToken = true },
+        new { name = "assistant-api", url = "https://h1q3hv0l-3002.euw.devtunnels.ms", forwardAuthToken = true },
     }))
-    .WithEnvironment("XS_APP_CONFIG", """"""
-        {
-            "authenticationMethod": "route",
-            "routes": [
-                {
-                "source": "^/favicon\\.(ico|svg|png|gif)$",
-                "target": "/favicon.$1",
-                "localDir": ".",
-                "cacheControl": "public, max-age=86400",
-                "csrfProtection": false
-                },
-                {
-                "source": "(.*)",
-                "target": "$1",
-                "destination": "mastra-api",
-                "csrfProtection": false,
-                "authenticationType": "ias"
-                }
-            ],
-            "websockets": {
-                "enabled": true
-            },
-            "login": {
-                "callbackEndpoint": "/login/callback?authType=ias"
-            },
-            "logout": {
-                "logoutEndpoint": "/logout",
-                "logoutPage": "/logout.html"
-            }
-        }
-
-    """""");
+    .WithBindMount(source:"../app/mastra/xs-app.json", target: "/app/xs-app.json");
+    
+builder.AddDevTunnel("mastra-api")
+       .WithReference(mastraApp)
+       .WithAnonymousAccess();
 
 mastra.WithParentRelationship(mastraApp);
 
@@ -93,8 +72,9 @@ var assistant = builder
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithEnvironment("NEXT_PUBLIC_ASSISTANT_BASE_URL", $"{mastraApp.GetEndpoint("http")}/chat")
-    .WithHttpEndpoint(env: "PORT", port: 3002, targetPort: 4002)
+    .WithHttpEndpoint(env: "PORT", port:  4002)
     .WithExternalHttpEndpoints()
+    
     .WithOtlpExporter();
 
 
@@ -103,11 +83,13 @@ var assistantApp = builder
     .WaitFor(assistant)
     .WithHttpEndpoint(port: 5002, targetPort: 6002)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
-    .WithEnvironment("DESTINATIONS", JsonSerializer.Serialize(new[]
+    // .WithEnvironment("VCAP_SERVICES", Environment.GetEnvironmentVariable("VCAP_SERVICES"))
+    .WithEnvironment("destinations", JsonSerializer.Serialize(new[]
     {
         new { name = "assistant-api", url = "http://localhost:4002", forwardAuthToken = true }
     }))
+    .WithEnvironment("DESTINATION_HOST_PATTERN", "https://^(.*).euw.devtunnels.ms$")
+    .WithEnvironment("NODE_ENV", "development")
     .WithOtlpExporter()
     .WithEnvironment("XS_APP_CONFIG", """"""    
         {
@@ -123,7 +105,7 @@ var assistantApp = builder
                 {
                 "source": "(.*)",
                 "target": "$1",
-                "destination": "assistant-api",
+                "destination": "*",
                 "csrfProtection": false,
                 "authenticationType": "ias"
                 }

@@ -9,13 +9,7 @@
       "cacheControl": "no-cache, no-store, must-revalidate",
       "authenticationType": "ias"
     },
-    {
-      "source": "^/auth/api/me",
-      "target": "/api/me",
-      "destination": "user-api",
-      "csrfProtection": false,
-      "authenticationType": "ias"
-    },
+   
   
     {
       "source": "^/user-api(.*)",

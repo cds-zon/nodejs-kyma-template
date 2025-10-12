@@ -50,7 +50,7 @@
   "setup:local": "npm run bind:all && npm run hybrid",
   "setup:dev": "npm install && npm run bind:auth && npm run serve",
   "deploy": "npx cds up -2 k8s",
-  "deploy:helm": "npm run build && helm upgrade v1 ./gen/chart --install --namespace devspace",
+  "deploy:helm": "npm run build && helm upgrade v5 ./gen/chart --install --namespace devspace",
   "deploy:cf": "cds deploy",
   "add:approuter": "cds add approuter",
   "add:ias": "cds add ias",
