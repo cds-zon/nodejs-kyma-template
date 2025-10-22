@@ -1,8 +1,5 @@
 "use client";
 
-import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
-import { AssistantCloud, AssistantRuntimeProvider } from "@assistant-ui/react";
-
 import { Thread } from "@/components/assistant-ui/thread";
 import {
   SidebarInset,
@@ -19,11 +16,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { RuntimeProvider } from "./runtime";
 
 export const Assistant = () => {
-
-
   return (
+    <RuntimeProvider>
       <SidebarProvider>
         <div className="flex h-dvh w-full pr-0.5">
           <AppSidebar />
@@ -51,5 +48,6 @@ export const Assistant = () => {
           </SidebarInset>
         </div>
       </SidebarProvider>
+    </RuntimeProvider>
   );
 };

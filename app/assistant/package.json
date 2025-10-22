@@ -2,8 +2,12 @@
   "name": "assistant-ui-starter",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
   "scripts": {
-    "dev": "next dev --turbopack ",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -11,10 +15,10 @@
   "dependencies": {
     "@ai-sdk/azure": "^2.0.23",
     "@ai-sdk/openai": "^2.0.10",
-    "@assistant-ui/react": "^0.10.46",
-    "@assistant-ui/react-ai-sdk": "^1.0.5",
-    "@assistant-ui/react-data-stream": "^0.10.1",
-    "@assistant-ui/react-markdown": "^0.10.9",
+    "@assistant-ui/react": "^0.11.2",
+    "@assistant-ui/react-ai-sdk": "^1.1.7",
+    "@assistant-ui/react-data-stream": "^0.11.2",
+    "@assistant-ui/react-markdown": "^0.11.2",
     "@mastra/client-js": "^0.11.2",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-separator": "^1.1.7",
@@ -26,8 +30,8 @@
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.3.1",
     "tw-animate-css": "^1.3.6"
@@ -36,8 +40,8 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwindcss": "^4",

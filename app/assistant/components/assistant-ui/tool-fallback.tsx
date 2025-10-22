@@ -1,9 +1,14 @@
-import { ToolCallContentPartComponent } from "@assistant-ui/react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 
-export const ToolFallback: ToolCallContentPartComponent = ({
+interface ToolFallbackProps {
+  toolName: string;
+  argsText: string;
+  result?: unknown;
+}
+
+export const ToolFallback: React.FC<ToolFallbackProps> = ({
   toolName,
   argsText,
   result,
