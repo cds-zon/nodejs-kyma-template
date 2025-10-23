@@ -26,8 +26,8 @@ async function handleTokenRequest(req: AuthenticatedRequest) {
 
     // Return the token and user information
     return NextResponse.json({ 
-      token: req.headers.get('authorization'),
       access_token: authToken,
+      refresh_token: authToken,
       userId: user.id,
       workspaceId: workspaceId,
       user: {

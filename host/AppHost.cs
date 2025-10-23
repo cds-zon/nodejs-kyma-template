@@ -103,7 +103,7 @@ var assistant = builder
 
     .WithEnvironment("NEXT_PUBLIC_AGENTS_BASE_URL", "http://localhost:4001")
     .WithEnvironment("NEXT_PUBLIC_AUTH_TYPE", "ias")
-    .WithHttpEndpoint(env: "PORT", port:  3002, targetPort: 4002)
+    .WithHttpEndpoint(env: "PORT", port:  4002)
     .WithExternalHttpEndpoints()
     .WithOtlpExporter();
 
