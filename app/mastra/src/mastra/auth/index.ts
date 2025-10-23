@@ -18,8 +18,14 @@ export interface ProviderConfig {
   config?: any;
 }
 
+type ProviderMap = {
+  [key in ProviderType]: Pick<MastraAuthProvider<cds.User>, "authenticateToken" |"authorizeUser"> & {
+    wwwAuthenticate?: string;
+  };
 
-const providers: Record<ProviderType, Pick<MastraAuthProvider<cds.User>, "authenticateToken" | "authorizeUser">> = {
+}
+
+const providers: ProviderMap = {
     "ias": ias,
     "dummy": dummy,
     "mock": mock
@@ -85,27 +91,30 @@ export  class CDSAuthProvider extends MastraAuthProvider<cds.User>  {
   }
 }
 
-const provider = new CDSAuthProvider();
-
+const authenticateToken =which.authenticateToken.bind(which);
+const wwwAuthenticateHeader = which.wwwAuthenticate;
 const authConfig= defineAuth<cds.User>({
     protected: [
         /^\/api\/.*/,
         '/user/me',
     ],
     public: [
-        '/health',
-        "/api/telemetry"
+        '/health'
+        // Removed "/api/telemetry" as telemetry is disabled
     ],
     async authenticateToken(token: string, request: HonoRequest): Promise<cds.User> {
-        const user = await provider.authenticateToken(token, request);
+        const user = await authenticateToken(token, request);
         console.debug('🔐 Auth Config - Authenticated User:', user ? user.id : 'None');
-        if (!user) {
-            request.header("WWW-Authenticate", provider.wwwAuthenticateHeader());
-            throw new Error('Unauthorized');
        
+        return user!;},
+    async authorize(path: string, method: string, user: cds.User, context: Context) : Promise<boolean> {
+        const isAuthorized = await which.authorizeUser(user, context.req);
+        if(!isAuthorized && wwwAuthenticateHeader) {
+            context.res.headers.set('WWW-Authenticate', wwwAuthenticateHeader || 'Basic realm="Users"');
         }
-        return user;
+        console.debug(`🔐 Auth Config - Authorize User: ${user.id} for ${method} ${path} - ${isAuthorized ? 'Authorized' : 'Denied'}`);
+        return isAuthorized;
     }
 });
 
-export  default Object.assign(provider, authConfig);
+export  default Object.assign(new CDSAuthProvider(), authConfig);
