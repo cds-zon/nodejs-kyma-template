@@ -6,7 +6,7 @@ import {llm} from "../llm";
 import {memory} from "../memory";
 // import { webSearchTool } from '../tools/webSearchTool';
 
-const mainModel = llm('gpt-4.1');
+const mainModel = llm('gpt-5');
 
 // Define the Research Agent
 

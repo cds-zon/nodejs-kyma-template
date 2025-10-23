@@ -3,7 +3,7 @@ import {llm} from "../llm";
 import {memory} from "../memory";
 
 // Initialize model - using o3-mini as in the original implementation
-const reportModel = llm('gpt-4.1');
+const reportModel = llm('gpt-5');
 
 export const reportAgent = new Agent({
   name: 'Report Agent',

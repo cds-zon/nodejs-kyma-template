@@ -7,7 +7,7 @@ import { containerTools } from '../tools/containerTools';
 import { gitWorkflowTools } from '../tools/gitWorkflowTools';
 import { taskManagementTools } from '../tools/taskManagementTools';
 
-const mainModel = llm('gpt-4.1');
+const mainModel = llm('gpt-5');
 
 export const developerAgent = new Agent({
   name: 'Developer Agent',

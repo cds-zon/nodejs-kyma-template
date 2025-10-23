@@ -4,7 +4,7 @@ import {Memory} from "@mastra/memory";
 import {memory} from "../memory";
 
 // Initialize model
-const mainModel = llm('gpt-4.1');
+const mainModel = llm('gpt-5');
 
 export const learningExtractionAgent = new Agent({
   name: 'Learning Extraction Agent',
