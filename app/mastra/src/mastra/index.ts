@@ -13,7 +13,7 @@ import {MessageListInput} from "@mastra/core/agent/message-list";
 import { getStorage } from './memory';
 // import { cdsAuthProvider, MastraAuthCds } from './auth/cds-auth-provider';
 import { Hono } from 'hono';
-import AuthProvider from './auth';
+import authProvider from './auth';
 import CDSAuthProvider from './auth';
 import { authMiddleware } from './middleware/auth';
 // import { cdsAuthProvider } from './auth/cds-auth-provider';
@@ -69,22 +69,25 @@ export const mastra = new Mastra({
     },
     host: env.HOST || "0.0.0.0",
     port: env.PORT ? parseInt(env.PORT) : 4111,
-    cors: {
-      origin: "*",
+     cors: {
+      origin:  (origin: string)=>origin,
+      credentials: true,
       allowMethods: ["*"],
-      allowHeaders: ["*"]
+      allowHeaders: ["*"],
+      exposeHeaders: ["*"],
     },
-    middleware: [authMiddleware],
-    experimental_auth:new AuthProvider(), 
+    middleware: [authMiddleware ],
+    experimental_auth:authProvider, 
     apiRoutes: [
       {
         // serviceAdapter:  new ExperimentalEmptyAdapter(),
-        path: "/chat",
+        path: "/api/agents/researchAgent/stream",
+         requiresAuth: true,
         createHandler: async ({ mastra }) => { 
           return async c=> {
             const {messages} = await c.req.json< {messages:MessageListInput}>() ;
             
-            const stream=await mastra.getAgent("researchAgent").streamVNext(messages,{
+            const stream=await mastra.getAgent("researchAgent").stream(messages,{
               format:"aisdk",
               savePerStep:true,
               memory: {

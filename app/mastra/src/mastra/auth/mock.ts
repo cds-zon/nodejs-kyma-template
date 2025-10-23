@@ -38,27 +38,14 @@ export class MockProvider implements MastraAuthProvider {
     if (!token) {
       return null;
     }
+    console.log('🔐 Mock Provider - Authenticating token', token);
 
-    try {
-      console.log('🔐 Mock Provider - Authenticating token');
-      
-      // Extract username from token (expecting format: "mock:username" or just "username")
-      const username = token.startsWith('mock:') ? token.substring(5) : token;
-      
-      // Use verify method similar to CDS mocked-users.js
-      const result = this.verify(username);
-      if ('failed' in result) {
-        console.warn('🔐 Mock Provider -', result.failed);
-        return null;
-      }
-
-      console.log('🔐 Mock Provider - User authenticated:', result.id);
-      return result as CDSUser;
-
-    } catch (error: any) {
-      console.warn('🔐 Mock Provider - Authentication failed:', error?.message || error);
-      return null;
-    }
+    const credentials = Buffer.from(token, 'base64').toString();
+    const [id, pwd] = credentials.split(':');
+    
+    // Verify user credentials
+    return this.users[id] ??  { failed: `User '${id}' not found` };
+ 
   }
 
   async authorizeUser(user: CDSUser): Promise<boolean> {
@@ -70,12 +57,17 @@ export class MockProvider implements MastraAuthProvider {
 
   /**
    * Verifies a username against configured users (similar to CDS mocked-users.js)
-   * @returns { {id:string} | {failed:string} }
+   * @returns { {auth:string} | {failed:string} }
    */
-  verify(id: string): { id: string; [key: string]: any } | { failed: string } {
-    let u = this.users[id];
-    if (!u) return id && this.users['*'] ? { id } : { failed: `User '${id}' not found` };
-    return u;
+  verify(auth: string): { id: string; [key: string]: any } | { failed: string } {
+    if(!auth){
+
+    }
+    const credentials = Buffer.from(auth.slice(6), 'base64').toString();
+    const [id, pwd] = credentials.split(':');
+    
+    // Verify user credentials
+    return this.users[id] ??  { failed: `User '${id}' not found` };
   }
 
   /**

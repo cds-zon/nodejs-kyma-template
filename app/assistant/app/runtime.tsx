@@ -2,16 +2,22 @@
 
 import {AssistantCloud, AssistantRuntimeProvider} from "@assistant-ui/react";
 import {AssistantChatTransport, useChatRuntime} from "@assistant-ui/react-ai-sdk";
+import { config } from "@/lib/config";
+import { useDataStreamRuntime } from "@assistant-ui/react-data-stream";
+import { Thread } from "@/components/assistant-ui/thread";
 
+// const {token, userId, workspaceId}= await fetch(`${config.api.assistantBaseUrl}/api/auth/token`).then((r) =>r.json())
 const cloud = new AssistantCloud({
-    baseUrl: process.env["NEXT_PUBLIC_ASSISTANT_BASE_URL"]! || "http://localhost:4361/api/agents/reaserchAgent/stream/vnext",
-    async authToken   ()   {
-        return  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjo5MDE2MjM5MDIyfQ.Ph_TolN_X-h1A3aZk2UXdfkn-jBwsI3fNrbISr0KLV8";
-    } 
-            
-});
-
-export function RuntimeProvider({
+    baseUrl: config.api.assistantBaseUrl,
+    anonymous:true,
+    // userId,
+    // workspaceId
+    authToken: () =>
+        fetch("/api/auth/token", { method: "POST" }).then((r) =>
+          r.json().then((data) => data.token)
+        ),
+ });
+export  function RuntimeProvider({
                                       children,
                                   }: Readonly<{
     children: React.ReactNode;
@@ -19,10 +25,38 @@ export function RuntimeProvider({
 
     const runtimeAssistantChat = useChatRuntime({
         transport: new AssistantChatTransport({
-            api: process.env["NEXT_PUBLIC_ASSISTANT_BASE_URL"]! || "http://localhost:4361/chat"
-         })
+            api: config.api.researchAgent,
+            credentials: 'include',
+            headers: async () => {
+                const { token, workspaceId , userId} = await fetch(`/api/auth/token`, {
+                    method: 'GET',
+                    credentials: 'include',
+                }).then((r) => r.json());
+                console.log('Fetched token for DataStreamRuntime:', token);
+                return {
+                    Authorization: `${token}`
+                };
+            }
+        }),
+        // cloud,
     });
-   
+    const runtime = useDataStreamRuntime({
+        api: config.api.researchAgent,
+        credentials: 'include',
+        headers: async () => {
+            const { token, workspaceId , userId} = await fetch(`/api/auth/token`, {
+                method: 'GET',
+                credentials: 'include',
+            }).then((r) => r.json());
+            console.log('Fetched token for DataStreamRuntime:', token);
+            return {
+                Authorization: `${token}`,
+                'X-Workspace-ID': workspaceId,
+                'X-User-ID': userId,
+            };
+        }
+    });
+
     return (
         <AssistantRuntimeProvider runtime={runtimeAssistantChat} >
             {children}

@@ -36,9 +36,10 @@ var mastra = builder
     .WithHttpEndpoint(env: "PORT", port: 3001, targetPort: 4001)
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
+    .WithEnvironment("CDS_REQUIRES_AUTH_KIND", "ias")
     .WithOtlpExporter();
 
-Console.WriteLine(mastra.GetEndpoint("http").ToString());
+Console.WriteLine(mastra.GetEndpoint("http"));
 
 var agentsAppRouter = builder
     .AddExecutable("agents-router", "npm", "..", "run", "hybrid:approuter", "--", "--", "--port", "6001")
@@ -50,7 +51,44 @@ var agentsAppRouter = builder
     .WithEnvironment("destinations", JsonSerializer.Serialize(new[]
     {
         new { name = "srv-api", url = "http://localhost:4001", forwardAuthToken = true },
-    }));
+    }))
+    .WithEnvironment("CORS", """"
+     [
+        {
+          "allowedOrigin":[
+                            {
+                                "host":"http://localhost:5001",
+                                "protocol":"https"
+                            },
+                            {
+                                "host":"http://localhost:5002",
+                                "protocol":"https"
+                            }
+                          ],
+          "allowedCredentials": true,
+          "uriPattern": "^/.*$",
+          "allowedHeaders": [
+            "Authorization",
+            "Content-Type",
+            "approuter-authorization",
+            "Cache-Control",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "x-approuter-authorization",
+            "*"
+          ],
+          "allowedMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTIONS"
+          ]
+        }
+      ]
+    """")
+    ;
     
 mastra.WithParentRelationship(agentsAppRouter);
 
@@ -61,7 +99,10 @@ var assistant = builder
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
     .WithEnvironment("OPENAI_BASE_URL", aiCoreProxy.GetEndpoint("http"))
     .WithEnvironment("OPENAI_APIKEY", "dummy-api-key")
-    .WithEnvironment("NEXT_PUBLIC_ASSISTANT_BASE_URL", $"{agentsAppRouter.GetEndpoint("http")}/chat")
+     .WithEnvironment("AGENTS_BASE_URL", agentsAppRouter.GetEndpoint("http"))
+
+    .WithEnvironment("NEXT_PUBLIC_AGENTS_BASE_URL", "http://localhost:4001")
+    .WithEnvironment("NEXT_PUBLIC_AUTH_TYPE", "ias")
     .WithHttpEndpoint(env: "PORT", port:  3002, targetPort: 4002)
     .WithExternalHttpEndpoints()
     .WithOtlpExporter();
@@ -78,7 +119,44 @@ var assistantApp = builder
     }))
     .WithEnvironment("DESTINATION_HOST_PATTERN", "https://^(.*).euw.devtunnels.ms$")
     .WithEnvironment("NODE_ENV", "development")
-    .WithOtlpExporter();
+    .WithOtlpExporter()
+    .WithEnvironment("CORS", """"
+     [
+        {
+          "allowedOrigin":[
+                            {
+                                "host":"http://localhost:5001",
+                                "protocol":"https"
+                            },
+                            {
+                                "host":"http://localhost:5002",
+                                "protocol":"https"
+                            }
+                          ],
+          "allowedCredentials": true,
+          "uriPattern": "^/.*$",
+          "allowedHeaders": [
+            "Authorization",
+            "Content-Type",
+            "approuter-authorization",
+            "Cache-Control",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "x-approuter-authorization",
+            "*"
+          ],
+          "allowedMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTIONS"
+          ]
+        }
+      ]
+    """")
+    ;
 
 assistant.WithParentRelationship(assistantApp);
 
