@@ -1,0 +1,64 @@
+{
+  "name": "hono-cds-auth",
+  "version": "1.0.0",
+  "description": "Hono authentication middleware for SAP CDS with support for dummy, mock, and IAS providers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware/index.d.ts",
+      "import": "./dist/middleware/index.js"
+    },
+    "./providers/*": {
+      "types": "./dist/providers/*.d.ts",
+      "import": "./dist/providers/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pkgroll",
+    "dev": "tsx examples/server.ts",
+    "dev:watch": "tsx watch examples/server.ts",
+    "test": "tsx tests/run-tests.ts",
+    "test:dummy": "tsx tests/dummy.test.ts",
+    "test:mock": "tsx tests/mock.test.ts",
+    "test:ias": "tsx tests/ias.test.ts"
+  },
+  "keywords": [
+    "hono",
+    "sap",
+    "cds",
+    "authentication",
+    "middleware",
+    "ias",
+    "oauth"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@sap/cds": "^8.5.5",
+    "@sap/xssec": "^4.2.5",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@types/node": "^22.10.2",
+    "axios": "^1.7.9",
+    "jwt-decode": "^4.0.0",
+    "pkgroll": "^2.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@sap/cds": ">=7.0.0",
+    "hono": ">=4.0.0"
+  }
+}
