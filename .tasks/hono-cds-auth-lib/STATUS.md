@@ -24,7 +24,9 @@
 - ⚠️ IAS provider: Code complete, requires real tokens for testing
 
 ## Deliverables
-- Standalone library at `.tasks/hono-cds-auth-lib/artifacts/hono-cds-auth/`
+- ✅ Standalone library moved to `packages/hono-cds-auth/`
+- ✅ Package renamed to `@cds-zon/hono-auth`
+- ✅ Added to pnpm workspace
 - Working examples in `examples/`
 - Comprehensive tests in `tests/`
 - Full documentation in `README.md`

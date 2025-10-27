@@ -1,5 +1,12 @@
 # Changelog
 
+## 2025-10-27 - Moved to Workspace
+- ✅ Moved package to `packages/hono-cds-auth/`
+- ✅ Renamed to `@cds-zon/hono-auth`
+- ✅ Added to pnpm workspace configuration
+- ✅ Updated all documentation to reflect new name and location
+- ✅ Verified builds and tests still pass
+
 ## 2025-10-27 - Completion
 - ✅ Library fully implemented and tested
 - ✅ All three providers working (dummy, mock, IAS)
