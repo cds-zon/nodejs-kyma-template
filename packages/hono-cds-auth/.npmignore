@@ -1,0 +1,11 @@
+node_modules/
+src/
+tests/
+examples/
+*.test.ts
+*.spec.ts
+tsconfig.json
+.gitignore
+SUMMARY.md
+QUICK_START.md
+memory-bank/
