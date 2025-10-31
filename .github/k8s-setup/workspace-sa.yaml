@@ -1,0 +1,241 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workspace-developer
+  namespace: devspace
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+    app.kubernetes.io/managed-by: manual
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: workspace-developer-token
+  namespace: devspace
+  annotations:
+    kubernetes.io/service-account.name: workspace-developer
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workspace-developer-role
+  namespace: devspace
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+rules:
+  # Full access to all core resources in the namespace for development
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - pods/status
+      - pods/portforward
+      - services
+      - services/proxy
+      - endpoints
+      - persistentvolumeclaims
+      - configmaps
+      - secrets
+      - events
+      - resourcequotas
+      - limitranges
+      - serviceaccounts
+      - bindings
+      - replicationcontrollers
+    verbs: ["*"]
+  
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs: ["*"]
+  
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["*"]
+  
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["*"]
+  
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["*"]
+  
+  - apiGroups: ["policy"]
+    resources:
+      - poddisruptionbudgets
+    verbs: ["*"]
+  
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - roles
+      - rolebindings
+    verbs: ["*"]
+  
+  # Kyma-specific resources
+  - apiGroups: ["serverless.kyma-project.io"]
+    resources:
+      - functions
+    verbs: ["*"]
+  
+  - apiGroups: ["gateway.kyma-project.io"]
+    resources:
+      - apirules
+    verbs: ["*"]
+  
+  - apiGroups: ["eventing.kyma-project.io"]
+    resources:
+      - subscriptions
+    verbs: ["*"]
+  
+  - apiGroups: ["applicationconnector.kyma-project.io"]
+    resources:
+      - applications
+    verbs: ["get", "list", "watch"]
+  
+  # SAP BTP Operator resources (for CDS bind)
+  - apiGroups: ["services.cloud.sap.com"]
+    resources:
+      - servicebindings
+      - serviceinstances
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-developer-rolebinding
+  namespace: devspace
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: workspace-developer-role
+subjects:
+  - kind: ServiceAccount
+    name: workspace-developer
+    namespace: devspace
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workspace-developer-cluster-reader
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+rules:
+  # Read-only access to common resources across all namespaces
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/status
+      - services
+      - endpoints
+      - configmaps
+      - events
+      - namespaces
+      - nodes
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - limitranges
+      - serviceaccounts
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["policy"]
+    resources:
+      - poddisruptionbudgets
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - roles
+      - rolebindings
+    verbs: ["get", "list", "watch"]
+  
+  # Read-only access to Kyma resources across namespaces
+  - apiGroups: ["serverless.kyma-project.io"]
+    resources:
+      - functions
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["gateway.kyma-project.io"]
+    resources:
+      - apirules
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["eventing.kyma-project.io"]
+    resources:
+      - subscriptions
+    verbs: ["get", "list", "watch"]
+  
+  - apiGroups: ["applicationconnector.kyma-project.io"]
+    resources:
+      - applications
+    verbs: ["get", "list", "watch"]
+  
+  # Read-only access to SAP BTP Operator resources across namespaces
+  - apiGroups: ["services.cloud.sap.com"]
+    resources:
+      - servicebindings
+      - serviceinstances
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: workspace-developer-cluster-reader-binding
+  labels:
+    app.kubernetes.io/name: workspace-developer
+    app.kubernetes.io/component: development
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workspace-developer-cluster-reader
+subjects:
+  - kind: ServiceAccount
+    name: workspace-developer
+    namespace: devspace
+

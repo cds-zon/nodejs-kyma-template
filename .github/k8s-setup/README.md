@@ -1,153 +1,325 @@
-# GitHub Actions Kubernetes Setup
+# Kubernetes Setup Scripts
 
-This directory contains all the necessary files and scripts to set up Kubernetes authentication and Docker registry access for GitHub Actions workflows.
+This directory contains scripts and manifests for setting up Kubernetes access for different environments.
 
-## 📁 Directory Structure
+## Overview
 
-```
-.github/k8s-setup/
-├── README.md                           # This documentation
-├── github-actions-service-account.yaml # Complete RBAC setup for GitHub Actions
-├── create-sa-kubeconfig.sh            # Script to generate service account kubeconfig
-├── setup-github-secrets.sh            # Script to set up GitHub secrets and variables
-└── github-actions-kubeconfig.yaml     # Generated service account kubeconfig
-```
+- **GitHub Actions**: Service account for CI/CD deployments
+- **Workspace/DevContainer**: Service account for local development
 
-## 🚀 Quick Setup for New Projects
+## Quick Start
 
-### Step 1: Create Service Account and RBAC
+### For GitHub Actions (CI/CD)
+
+1. **Create the service account:**
+   ```bash
+   kubectl apply -f github-actions-sa.yaml
+   ```
+
+2. **Generate the kubeconfig:**
+   ```bash
+   ./create-sa-kubeconfig.sh
+   ```
+
+3. **Add to GitHub Secrets:**
+   ```bash
+   # Encode the kubeconfig for GitHub secrets
+   cat github-actions-kubeconfig.yaml | base64 -w 0
+   ```
+   
+   Then add as `KUBE_CONFIG` secret in your GitHub repository.
+
+### For Workspace/DevContainer (Local Development)
+
+1. **Create the service account:**
+   ```bash
+   kubectl apply -f workspace-sa.yaml
+   ```
+
+2. **Generate the kubeconfig:**
+   ```bash
+   ./create-workspace-kubeconfig.sh
+   ```
+
+3. **Use the kubeconfig:**
+   ```bash
+   # Option 1: Export for current session
+   export KUBECONFIG=$(pwd)/workspace-kubeconfig.yaml
+   kubectl get pods
+   
+   # Option 2: Merge with existing kubeconfig
+   KUBECONFIG=~/.kube/config:$(pwd)/workspace-kubeconfig.yaml kubectl config view --flatten > ~/.kube/config.new
+   mv ~/.kube/config.new ~/.kube/config
+   ```
+
+4. **For DevContainer** (add to `.devcontainer/devcontainer.json`):
+   ```json
+   {
+     "containerEnv": {
+       "KUBECONFIG": "/workspace/workspace-kubeconfig.yaml"
+     },
+     "mounts": [
+       "source=${localWorkspaceFolder}/workspace-kubeconfig.yaml,target=/workspace/workspace-kubeconfig.yaml,type=bind"
+     ]
+   }
+   ```
+
+## Service Account Permissions
+
+### Permission Model Overview
+
+Each service account uses a combination of Kubernetes RBAC resources:
+
+- **Role + RoleBinding**: Namespace-scoped permissions (write access in `devspace`)
+- **ClusterRole + ClusterRoleBinding**: Cluster-wide permissions (read-only across all namespaces)
+
+This model provides:
+- 🔒 **Security**: Write operations limited to designated namespace
+- 👀 **Visibility**: Read access across cluster for debugging and monitoring
+- 🎯 **Flexibility**: Can inspect resources in any namespace without risk of accidental modifications
+
+### GitHub Actions Service Account (`github-actions-deployer`)
+
+**Purpose**: CI/CD deployments with restricted permissions
+
+**Permissions**:
+- ✅ Deploy and update applications (Deployments, Services)
+- ✅ Manage configurations (ConfigMaps, Secrets)
+- ✅ View logs and status
+- ✅ Manage Kyma resources (Functions, APIRules, Subscriptions)
+- ❌ No cluster-admin access
+- ❌ Limited to `devspace` namespace
+
+### Workspace Developer Service Account (`workspace-developer`)
+
+**Purpose**: Local development with broader permissions
+
+**Namespace-scoped Permissions (devspace)** - Full write access:
+- ✅ **Core resources**: pods, services, endpoints, configmaps, secrets, events, serviceaccounts
+- ✅ **Workloads**: deployments, statefulsets, daemonsets, replicasets, jobs, cronjobs
+- ✅ **Storage**: persistentvolumeclaims
+- ✅ **Networking**: ingresses, networkpolicies
+- ✅ **Scaling**: horizontalpodautoscalers
+- ✅ **Policy**: poddisruptionbudgets
+- ✅ **RBAC**: roles, rolebindings (namespace-scoped)
+- ✅ **Kyma**: functions, apirules, subscriptions
+- ✅ **SAP BTP Operator**: servicebindings, serviceinstances
+- ✅ **Advanced pod operations**: exec, logs, port-forward, status
+
+**Cluster-wide Permissions (all namespaces)** - Read-only access:
+- ✅ **Core resources**: pods, services, events, configmaps, nodes, namespaces, PVs/PVCs
+- ✅ **Workloads**: deployments, statefulsets, daemonsets, replicasets, jobs, cronjobs
+- ✅ **Networking**: ingresses, networkpolicies
+- ✅ **Scaling & Policy**: horizontalpodautoscalers, poddisruptionbudgets
+- ✅ **RBAC**: view roles and rolebindings across namespaces
+- ✅ **Kyma resources**: view all Kyma resources cluster-wide
+- ✅ **SAP BTP resources**: view servicebindings and serviceinstances cluster-wide
+- ✅ **Logs**: access pod logs from any namespace
+- ❌ **No write access** outside `devspace` namespace
+- ❌ **No cluster-admin** access (cannot modify cluster-scoped resources)
+
+## Scripts
+
+### `create-sa-kubeconfig.sh`
+
+Creates a kubeconfig file for GitHub Actions using the `github-actions-deployer` service account.
+
+**Usage**:
 ```bash
-kubectl apply -f .github/k8s-setup/github-actions-service-account.yaml
-```
-
-### Step 2: Generate Service Account Kubeconfig
-```bash
-cd .github/k8s-setup/
 ./create-sa-kubeconfig.sh
 ```
 
-### Step 3: Set up GitHub Secrets
+**Environment Variables**:
+- `NAMESPACE` - Target namespace (default: `devspace`)
+- `SERVICE_ACCOUNT` - Service account name (default: `github-actions-deployer`)
+- `SECRET_NAME` - Secret name (default: `github-actions-deployer-token`)
+
+### `create-workspace-kubeconfig.sh`
+
+Creates a kubeconfig file for workspace/devcontainer use.
+
+**Usage**:
 ```bash
-# For repository-level secrets
-./setup-github-secrets.sh --repo
-
-# For organization-level secrets
-./setup-github-secrets.sh --org your-org-name
+./create-workspace-kubeconfig.sh
 ```
 
-## 📋 What Gets Created
+**Environment Variables**:
+- `NAMESPACE` - Target namespace (default: `devspace`)
+- `SERVICE_ACCOUNT` - Service account name (default: `workspace-developer`)
+- `SECRET_NAME` - Secret name (default: `workspace-developer-token`)
+- `OUTPUT_FILE` - Output filename (default: `workspace-kubeconfig.yaml`)
 
-### 🔐 Kubernetes Resources
-- **ServiceAccount**: `github-actions-deployer` in `devspace` namespace
-- **ClusterRole**: Comprehensive permissions for Kyma/SAP deployments
-- **ClusterRoleBinding**: Binds service account to permissions
-- **Secret**: Service account token for authentication
-
-### 🔑 GitHub Secrets/Variables
-- **`DOCKER_REGISTRY`** (variable): Docker registry URL
-- **`DOCKER_USERNAME`** (variable): Docker registry username  
-- **`DOCKER_PASSWORD`** (secret): Docker registry password
-- **`KUBE_CONFIG`** (secret): Service account-based kubeconfig
-
-## 🛡️ Permissions Included
-
-The service account has permissions for:
-
-### Core Kubernetes Resources
-- pods, services, endpoints, persistentvolumeclaims, events, configmaps, secrets, serviceaccounts
-- deployments, daemonsets, replicasets, statefulsets
-- ingresses, networkpolicies, jobs, cronjobs, horizontalpodautoscalers
-
-### SAP Cloud Platform Resources
-- servicebindings, serviceinstances
-
-### Kyma Platform Resources
-- apirules, ratelimits, customconfigs, registrycacheconfigs
-- subscriptions (eventing)
-
-### SAP Connectivity Resources
-- connectivityproxies, servicemappings, destinations
-
-### Istio Service Mesh Resources
-- destinationrules, gateways, serviceentries, sidecars, virtualservices
-- authorizationpolicies, peerauthentications, requestauthentications
-- wasmplugins
-
-## 🔧 Usage in GitHub Actions
-
-Your workflows can now use these variables and secrets:
-
-```yaml
-steps:
-  - uses: ./.github/actions/kyma-setup
-    with:
-      registry: ${{ vars.DOCKER_REGISTRY }}
-      user: ${{ vars.DOCKER_USERNAME }}
-      password: ${{ secrets.DOCKER_PASSWORD }}
-      kube-config: ${{ secrets.KUBE_CONFIG }}
+**Example with custom values**:
+```bash
+NAMESPACE=dev-team OUTPUT_FILE=my-kubeconfig.yaml ./create-workspace-kubeconfig.sh
 ```
 
-## 📖 File Descriptions
+## Security Best Practices
 
-### `github-actions-service-account.yaml`
-Complete RBAC configuration including:
-- ServiceAccount definition
-- ClusterRole with comprehensive permissions
-- ClusterRoleBinding
-- Secret for service account token
+### 1. Keep kubeconfig files out of version control
 
-### `create-sa-kubeconfig.sh`
-Utility script that:
-- Extracts service account token and CA certificate
-- Generates a kubeconfig file for the service account
-- Provides usage instructions
+Add to `.gitignore`:
+```
+*kubeconfig.yaml
+workspace-kubeconfig.yaml
+github-actions-kubeconfig.yaml
+```
 
-### `setup-github-secrets.sh`
-Automation script that:
-- Discovers Docker credentials from your Kubernetes cluster
-- Sets up GitHub repository or organization variables/secrets
-- Includes comprehensive error handling and validation
+### 2. Rotate tokens regularly
 
-### `github-actions-kubeconfig.yaml`
-Generated kubeconfig file that:
-- Uses service account token authentication (no OIDC)
-- Points to your Kyma cluster
-- Sets `devspace` as default namespace
+For GitHub Actions:
+```bash
+kubectl delete secret github-actions-deployer-token -n devspace
+kubectl apply -f github-actions-sa.yaml
+./create-sa-kubeconfig.sh
+# Update GitHub secret
+```
 
-## 🔄 For New Organizations/Projects
+For Workspace:
+```bash
+kubectl delete secret workspace-developer-token -n devspace
+kubectl apply -f workspace-sa.yaml
+./create-workspace-kubeconfig.sh
+```
 
-1. **Copy this directory** to your new project
-2. **Run the setup scripts** in order
-3. **Customize namespace** if needed by editing the YAML files
-4. **Test deployment** with your GitHub Actions
+### 3. Use different service accounts for different purposes
 
-## 🛠️ Troubleshooting
+- Don't use GitHub Actions SA for local development
+- Don't use Workspace SA for CI/CD
+- Create team-specific SAs if needed
 
-### Common Issues
+### 4. Monitor service account usage
 
-1. **"Forbidden" errors during deployment**
-   - Check if service account has the required permissions
-   - Add missing permissions to the ClusterRole in `github-actions-service-account.yaml`
+```bash
+# Check service account permissions
+kubectl auth can-i --list --as=system:serviceaccount:devspace:workspace-developer -n devspace
 
-2. **"Service account token not found"**
-   - Wait a few seconds for Kubernetes to create the token
-   - Check if the secret exists: `kubectl get secret github-actions-deployer-token -n devspace`
+# View recent token usage
+kubectl get events -n devspace --field-selector involvedObject.name=workspace-developer
+```
 
-3. **GitHub CLI authentication issues**
-   - For organization setup: `gh auth refresh -s admin:org`
-   - For repository setup: `gh auth login`
+## Troubleshooting
 
-## 🔐 Security Notes
+### "Secret not found" error
 
-- Service account tokens are long-lived but can be rotated
-- ClusterRole permissions are scoped to necessary resources only
-- GitHub secrets are encrypted and only accessible to workflows
-- Default namespace is `devspace` - change if needed for your environment
+Make sure you've applied the service account manifest first:
+```bash
+kubectl apply -f workspace-sa.yaml
+# or
+kubectl apply -f github-actions-sa.yaml
+```
 
-## 🎯 Benefits of This Approach
+### "Forbidden" errors when using kubeconfig
 
-- ✅ **No OIDC complexity** in CI/CD pipelines
-- ✅ **Comprehensive permissions** for Kyma/SAP deployments  
-- ✅ **Reusable setup** for multiple projects
-- ✅ **Clear organization** under `.github/` directory
-- ✅ **Version controlled** RBAC configuration
+Check the role bindings:
+```bash
+kubectl get rolebinding -n devspace
+kubectl describe role workspace-developer-role -n devspace
+```
+
+### Token expired
+
+Kubernetes service account tokens don't expire by default, but if you're getting authentication errors:
+```bash
+# Recreate the secret
+kubectl delete secret workspace-developer-token -n devspace
+kubectl apply -f workspace-sa.yaml
+./create-workspace-kubeconfig.sh
+```
+
+### Different namespace
+
+To use a different namespace:
+```bash
+NAMESPACE=my-namespace ./create-workspace-kubeconfig.sh
+```
+
+Make sure the service account exists in that namespace:
+```bash
+kubectl get sa workspace-developer -n my-namespace
+```
+
+## Files
+
+- `workspace-sa.yaml` - Service account manifest for workspace/devcontainer
+- `github-actions-sa.yaml` - Service account manifest for GitHub Actions (if exists)
+- `create-workspace-kubeconfig.sh` - Script to generate workspace kubeconfig
+- `create-sa-kubeconfig.sh` - Script to generate GitHub Actions kubeconfig
+- `README.md` - This file
+
+## Permission Examples
+
+### What Works with Workspace Developer SA
+
+**✅ Read operations across all namespaces:**
+```bash
+# List all pods cluster-wide
+kubectl get pods --all-namespaces
+
+# View pods in any namespace
+kubectl get pods -n kube-system
+
+# View logs from any namespace
+kubectl logs -n production my-app-pod
+
+# Describe resources anywhere
+kubectl describe deployment -n staging my-app
+```
+
+**✅ Write operations in devspace namespace:**
+```bash
+# Create resources in devspace
+kubectl apply -f deployment.yaml -n devspace
+
+# Delete pods in devspace
+kubectl delete pod my-pod -n devspace
+
+# Execute into pods in devspace
+kubectl exec -it my-pod -n devspace -- /bin/bash
+
+# Port forward in devspace
+kubectl port-forward -n devspace my-pod 8080:8080
+
+# View and manage events
+kubectl get events -n devspace
+kubectl describe events -n devspace
+
+# Create RBAC resources
+kubectl create role my-role -n devspace --verb=get --resource=pods
+kubectl create rolebinding my-binding -n devspace --role=my-role --serviceaccount=devspace:my-sa
+
+# Manage autoscaling
+kubectl autoscale deployment my-app -n devspace --min=2 --max=10
+```
+
+### What Doesn't Work
+
+**❌ Write operations outside devspace:**
+```bash
+# This will fail - cannot create in other namespaces
+kubectl apply -f deployment.yaml -n production
+
+# This will fail - cannot delete in other namespaces
+kubectl delete pod my-pod -n kube-system
+
+# This will fail - cannot exec into pods outside devspace
+kubectl exec -it my-pod -n production -- /bin/bash
+```
+
+**❌ Cluster-admin operations:**
+```bash
+# Cannot create namespaces
+kubectl create namespace new-namespace
+
+# Cannot modify cluster-wide resources
+kubectl create clusterrole my-role
+
+# Cannot modify nodes
+kubectl drain node-1
+```
+
+## Additional Resources
+
+- [Kubernetes RBAC Documentation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [Kyma Documentation](https://kyma-project.io/docs/)
+- [Service Account Tokens](https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/)

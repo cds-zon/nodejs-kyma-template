@@ -1,0 +1,22 @@
+{
+  "setup-worktree": [
+    "#!/bin/bash",
+    "# install dependencies",
+    "pnpm install",
+    "curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh",
+    "chmod +x dotnet-install.sh",
+    "./dotnet-install.sh --version latest",
+    "source /home/ubuntu/.bashrc",
+    "dotnet --list-sdks",
+    "dotnet --list-runtimes",
+    "curl -sSL https://aspire.dev/install.sh -o aspire-install.sh",
+    "chmod +x aspire-install.sh",
+    "./aspire-install.sh  --install-extension   #   --quality dev  --install-path \"~/bin\"",
+    "source /home/ubuntu/.bashrc",
+    "aspire --version",
+    "# fnm use",
+    "# npm install",
+    "cp $ROOT_WORKTREE_PATH/.cdsrc-private.json  .cdsrc-private.json",
+    "pnpm bind:resolve"
+  ]
+}
