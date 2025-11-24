@@ -48,6 +48,12 @@ jobs:
           user: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+          
+      - name: Verify cluster connection
+        shell: bash
+        run: |
+            kubectl cluster-info
+            kubectl version --short || kubectl version
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
