@@ -20,6 +20,8 @@ on:
 permissions:
   contents: read
   deployments: write
+  packages: write 
+  pull-requests: write
 
 concurrency:
   group: kyma-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
