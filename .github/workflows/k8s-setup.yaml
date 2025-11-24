@@ -19,7 +19,7 @@ jobs:
           registry: ${{ vars.DOCKER_REGISTRY }}
           user: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          kube-config: ${{ secrets.KUBE_CONFIG }}
+          kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
 
       - name: Validate cluster access
         shell: bash
