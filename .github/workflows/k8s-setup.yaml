@@ -20,6 +20,15 @@ jobs:
   setup-and-verify:
     runs-on: ubuntu-latest
     steps:
+      - name: Check if Kubernetes deployment is configured
+        id: check-secrets
+        run: |
+          if [[ -n "${{ secrets.KUBE_TOKEN ||  secrets.KUBE_CONFIG_WORKSPACE }}" ]]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v5
 
       - name: Install kubectl
