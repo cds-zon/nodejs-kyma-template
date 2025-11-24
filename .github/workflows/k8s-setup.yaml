@@ -2,8 +2,17 @@ name: Kubernetes Setup
 
 on:
   workflow_call:
+    inputs:
+      namespace:
+        description: 'Kubernetes namespace (optional, defaults to dev)'
+        required: false
+        type: string
   workflow_dispatch:
-
+    inputs:
+      namespace:
+          description: 'Kubernetes namespace (optional, defaults to dev)'
+          required: false
+          type: string
 permissions:
   contents: read
 
@@ -13,13 +22,62 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Run Kyma setup
-        uses: ./.github/actions/kyma-setup
+      - name: Install kubectl
+        if: steps.check-secrets.outputs.configured == 'true'
+        uses: azure/setup-kubectl@v3
         with:
-          registry: ${{ vars.DOCKER_REGISTRY }}
-          user: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: Configure kubectl
+        if: steps.check-secrets.outputs.configured == 'true'
+        env:
+          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_USER: ${{ secrets.KUBE_USER }}
+          KUBE_CONFIG_WORKSPACE: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+        run: |
+          # Use provided values or defaults
+          KUBE_USER="${KUBE_USER:-deployer}"
+          KUBE_CLUSTER="${KUBE_CLUSTER:-kubernetes}"
+          
+          # If KUBE_CONFIG_WORKSPACE is provided, use it
+          if [[ -n "$KUBE_CONFIG_WORKSPACE" ]]; then
+            echo "Using kubeconfig from KUBE_CONFIG_WORKSPACE"
+            mkdir -p ${HOME}/.kube
+            echo "$KUBE_CONFIG_WORKSPACE" | base64 --decode > ${HOME}/.kube/config
+            chmod 600 ${HOME}/.kube/config
+          else
+            # Fallback to token-based auth
+            echo "Using token-based authentication"
+            KUBE_SERVER="${KUBE_SERVER:-https://kubernetes.default.svc}"
+            kubectl config set-cluster "$KUBE_CLUSTER" --server="$KUBE_SERVER" --insecure-skip-tls-verify=true
+            kubectl config set-credentials "$KUBE_USER" --token="$KUBE_TOKEN"
+            kubectl config set-context "$KUBE_CLUSTER" --cluster="$KUBE_CLUSTER" --user="$KUBE_USER"
+            kubectl config use-context "$KUBE_CLUSTER"
+          fi
+      - name: Verify cluster connection
+        if: steps.check-secrets.outputs.configured == 'true'
+        run: |
+          kubectl cluster-info
+          kubectl version --short || kubectl version
+          
+      - name: Set namespace
+        if: steps.check-secrets.outputs.configured == 'true'
+        id: namespace
+        env:
+          NAMESPACE: ${{ github.event.inputs.namespace || env.NAMESPACE }}
+        run: |
+          # Use NAMESPACE input/env if provided, otherwise use devspace
+          if [[ -n "$NAMESPACE" ]]; then
+            NS="$NAMESPACE"
+            echo "Using provided namespace: $NS"
+          else
+            NS="devspace"
+            echo "Using default namespace: $NS"
+          fi
+          echo "namespace=$NS" >> $GITHUB_OUTPUT
+          echo "Deploying to namespace: $NS"
+
 
       - name: Validate cluster access
         shell: bash
