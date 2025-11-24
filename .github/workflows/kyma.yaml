@@ -32,6 +32,7 @@ jobs:
     uses: ./.github/workflows/k8s-setup.yaml
     secrets: inherit
 
+
   deploy:
     needs: k8s-setup
     runs-on: ubuntu-latest
@@ -57,12 +58,12 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
   
-      - uses: ./.github/actions/kyma-setup
-        with:
-          registry: ${{ vars.DOCKER_REGISTRY }}
-          user: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          kube-config: ${{ secrets.KUBE_CONFIG }}
+      # - uses: ./.github/actions/kyma-setup
+      #   with:
+      #     registry: ${{ vars.DOCKER_REGISTRY }}
+      #     user: ${{ vars.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      #     kube-config: ${{ secrets.KUBE_CONFIG }}
           
       
       - name: Set release version
