@@ -33,7 +33,7 @@ jobs:
         KUBE_USER: ${{ secrets.KUBE_USER }}
         KUBE_CONFIG_WORKSPACE: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
       volumes:         
-        - ${HOME}/.kube/config:/.kube/config
+        - ${{env.HOME}}/.kube/config:/.kube/config
     steps:
       # - name: Check if Kubernetes deployment is configured
       #   id: check-secrets
