@@ -63,20 +63,10 @@ runs:
       shell: bash
     
     - shell: bash
-      if: inputs.kube-config
+      name: Configure 
       run: |
-          set -e
-          echo "/usr/local/bin/kubectl" >> $GITHUB_PATH
-          echo "$HOME/kyma-binaries >> $GITHUB_PATH
-          if [ ! -d "$HOME/.kube" ]; then
-              mkdir -p $HOME/.kube
-          fi
-          echo "${{ inputs.kube-config }}" | base64 --decode > $HOME/.kube/config
-     - name: Docker Login
-       run: echo ${{ inputs.password }} | docker login ${{ inputs.registry }} -u ${{ inputs.user }} --password-stdin
-
-     - name: Verify cluster connection
-       shell: bash
-       run: |
-          kubectl cluster-info
-          kubectl version --short || kubectl version
+          mkdir ${HOME}/kyma-binaries
+          export PATH=${HOME}/kyma-binaries/:$PATH
+          echo "${{ inputs.password }}" | docker login "${{ inputs.registry }}" -u "${{ inputs.user }}" --password-stdin
+          mkdir ${HOME}/.kube
+          echo "${{ inputs.kube-config }}" | base64 --decode > ${HOME}/.kube/config
