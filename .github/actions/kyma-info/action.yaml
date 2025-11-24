@@ -8,8 +8,9 @@ inputs:
     required: true
 
 runs:
-  using: "composite"
-  steps:
+  using: "composite" 
+
+   steps:
     - name: Get Events
       shell: bash
       run: kubectl get events --sort-by='.lastTimestamp' | tail -n 20
