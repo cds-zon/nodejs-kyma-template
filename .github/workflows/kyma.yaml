@@ -36,11 +36,18 @@ jobs:
 
 
   deploy:
-    needs: k8s-setup
     runs-on: ubuntu-latest
     container:
       image: sapmachine:ubuntu-24.04
     steps:
+   
+      - uses: ./.github/actions/kyma-setup
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          user: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+
       - uses: actions/checkout@v5
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -59,13 +66,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-  
-      # - uses: ./.github/actions/kyma-setup
-      #   with:
-      #     registry: ${{ vars.DOCKER_REGISTRY }}
-      #     user: ${{ vars.DOCKER_USERNAME }}
-      #     password: ${{ secrets.DOCKER_PASSWORD }}
-      #     kube-config: ${{ secrets.KUBE_CONFIG }}
           
       
       - name: Set release version
