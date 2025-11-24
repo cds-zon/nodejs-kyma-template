@@ -73,7 +73,7 @@ runs:
           fi
           echo "${{ inputs.kube-config }}" | base64 --decode > $HOME/.kube/config
      - name: Docker Login
-       run: echo "${{ inputs.password }}" | docker login "${{ inputs.registry }}" -u "${{ inputs.user }}" --password-stdin
+       run: echo ${{ inputs.password }} | docker login ${{ inputs.registry }} -u ${{ inputs.user }} --password-stdin
 
      - name: Verify cluster connection
        shell: bash
