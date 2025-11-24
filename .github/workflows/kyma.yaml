@@ -28,7 +28,12 @@ concurrency:
 env:
   APP_NAME: v1
 jobs:
+  k8s-setup:
+    uses: ./.github/workflows/k8s-setup.yaml
+    secrets: inherit
+
   deploy:
+    needs: k8s-setup
     runs-on: ubuntu-latest
     container:
       image: sapmachine:ubuntu-24.04
