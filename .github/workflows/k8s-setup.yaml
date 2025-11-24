@@ -1,0 +1,29 @@
+name: Kubernetes Setup
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run Kyma setup
+        uses: ./.github/actions/kyma-setup
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          user: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+
+      - name: Validate cluster access
+        shell: bash
+        run: |
+          kubectl cluster-info
+          kubectl auth can-i get pods --namespace devspace
+          kubectl get namespaces
