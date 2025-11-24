@@ -69,7 +69,7 @@ export const iasAuth = new CDSDirectAuth();
 
 export const middleware = bearerAuth({
   verifyToken: async (token, c) => {
-    const user = iasAuth.authenticateToken(token);
+    const user = await iasAuth.authenticateToken(token);
     if (user) {
       c.set("user", user);
       c.get("runtimeContext")?.set("user", user);

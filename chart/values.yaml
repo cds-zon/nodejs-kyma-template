@@ -185,12 +185,11 @@ mastra:
     enabled: false
   image:
     repository: agents/mastra
-
+  port: 8080
   hpa:
     maxReplicas: 1
     minReplicas: 1
 
-  port: 8080
   resources:
     limits:
       ephemeral-storage: 1Gi
@@ -225,7 +224,6 @@ mastra:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otlp-dashboard:18889
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
-    PORT: 8080
     DATABASE_DIR: .
     # # # # POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
     pg: "false"
@@ -289,8 +287,8 @@ identity:
   servicePlanName: application
   externalName: "agents-a2a-oauth"
   parameters:
-    displayName: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
-    display-name: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
+    name: "{{ .Release.Name }}-a2a"
+    display-name: "A2A Application (rc-{{ .Release.Name }})"
     home-page: https://{{ .Release.Namespace }}.{{ .Values.global.domain }}
     multi-tenant: true
     oauth2-configuration:
@@ -322,6 +320,9 @@ identity:
         type: public
       - name: mastra-api
         type: public
+      - name: principal-propagation
+        description: Principal Propagation for Grant Management
+
 
 backendDestinations:
   user-api:
@@ -331,7 +332,8 @@ backendDestinations:
     service: mastra
     forwardAuthToken: true
   srv-api:
-    service: srv
+    service: mastra
+    forwardAuthToken: true
 
 destination:
   serviceOfferingName: destination

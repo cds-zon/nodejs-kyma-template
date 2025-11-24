@@ -15,6 +15,7 @@ import { Hono, HonoRequest } from "hono";
 import authProvider from "./auth";
 import { middleware } from "./auth/ias";
 import { authMiddleware } from "./middleware/auth";
+import { taskManagerAgent } from "./agents/taskManager";
 // import { cdsAuthProvider } from './auth/cds-auth-provider';
 // import { authenticationMiddleware, authorizationMiddleware } from '@mastra/core';
 
@@ -53,6 +54,7 @@ export const mastra = new Mastra({
   telemetry: otelConfig,
   storage: getStorage("mastra"),
   agents: {
+    taskManagerAgent,
     researchAgent,
     reportAgent,
     evaluationAgent,

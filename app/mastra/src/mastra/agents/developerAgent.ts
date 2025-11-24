@@ -1,7 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { llm } from '../llm';
 import { memory } from '../memory';
-import { mcpClient } from '../tools/mcp';
+import {   tools } from '../tools/mcp';
 import { githubTools } from '../tools/githubTools';
 import { containerTools } from '../tools/containerTools';
 import { gitWorkflowTools } from '../tools/gitWorkflowTools';
@@ -113,6 +113,6 @@ Remember to be thorough, systematic, and always prioritize code quality and secu
     ...taskManagementTools,
     
     // MCP tools for extended capabilities
-    ...await mcpClient.getTools(),
+    ...await tools({runtimeContext, mastra}),
   }),
 });

@@ -5,7 +5,7 @@
 using static Aspire.Hosting.InputType;
 using System.Text.Json;
 
-const string dashboardOtlpHttpEndpointUrl = "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL";
+// const string dashboardOtlpHttpEndpointUrl = "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL";
 
 // VCAP_SERVICES fix temporarily disabled due to compilation issues
 
@@ -50,7 +50,7 @@ var agentsAppRouter = builder
     .WithEnvironment("DESTINATION_HOST_PATTERN", "https://^(.*).euw.devtunnels.ms$")
     .WithEnvironment("destinations", JsonSerializer.Serialize(new[]
     {
-        new { name = "srv-api", url = "http://localhost:4001", forwardAuthToken = true },
+        new { name = "mastra-api", url = "http://localhost:4001", forwardAuthToken = true },
     }))
     .WithEnvironment("CORS", """"
      [

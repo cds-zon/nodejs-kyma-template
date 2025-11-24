@@ -1,9 +1,9 @@
 import { Agent } from '@mastra/core/agent';
 import { evaluateResultTool } from '../tools/evaluateResultTool';
 import { extractLearningsTool } from '../tools/extractLearningsTool';
-import {  mcpClient } from '../tools/mcp';
 import {llm} from "../llm";
 import {memory} from "../memory";
+import { tools } from '../tools/mcp';
 // import { webSearchTool } from '../tools/webSearchTool';
 
 const mainModel = llm('gpt-5');
@@ -53,7 +53,7 @@ export const researchAgent = new Agent({
     // webSearchTool,
     evaluateResultTool,
     extractLearningsTool,
-    ...await mcpClient.getTools(),
+    ...await tools({mastra, runtimeContext}),
     // MCP tools will be added dynamically via toolsets
   }),
 });
