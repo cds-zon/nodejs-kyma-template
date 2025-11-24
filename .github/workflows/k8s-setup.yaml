@@ -20,7 +20,7 @@ permissions:
   packages: write
 
 env:
-  KUBECTL_VERSION: 'v1.28.0'
+  KUBECTL_VERSION: 'v1.34.2'
  
 jobs:
   setup-and-verify:
