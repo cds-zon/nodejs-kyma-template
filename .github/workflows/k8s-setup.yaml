@@ -15,7 +15,13 @@ on:
           type: string
 permissions:
   contents: read
+  pull-requests: write
+  deployments: write
+  packages: write
 
+env:
+  KUBECTL_VERSION: 'v1.28.0'
+ 
 jobs:
   setup-and-verify:
     runs-on: ubuntu-latest
@@ -29,7 +35,6 @@ jobs:
             echo "configured=false" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v5
 
       - name: Install kubectl
         if: steps.check-secrets.outputs.configured == 'true'
@@ -94,3 +99,8 @@ jobs:
           kubectl cluster-info
           kubectl auth can-i get pods --namespace devspace
           kubectl get namespaces
+
+      # - name: Setup namespace with dockerconfig of gchr
+      # env:
+      #   KUBECTL_VERSION: 'v1.28.0'
+      #   REGISTRY: ghcr.io
