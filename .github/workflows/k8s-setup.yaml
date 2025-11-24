@@ -23,12 +23,13 @@ env:
   KUBECTL_VERSION: 'v1.34.2'
  
 jobs:
+
   setup-and-verify:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/cds-zon/dev:main
       volumes:         
-        - ${{env.HOME}}/.kube/config:/.kube/config
+        - "${HOME}/.kube/config:/.kube/config"
 
       env:
         KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
