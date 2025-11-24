@@ -40,7 +40,8 @@ jobs:
     container:
       image: sapmachine:ubuntu-24.04
     steps:
-   
+      - uses: actions/checkout@v5
+
       - uses: ./.github/actions/kyma-setup
         with:
           registry: ${{ vars.DOCKER_REGISTRY }}
@@ -48,7 +49,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           kube-config: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
 
-      - uses: actions/checkout@v5
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
