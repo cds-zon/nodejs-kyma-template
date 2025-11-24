@@ -32,7 +32,7 @@ env:
 jobs:
   k8s-setup:
     uses: ./.github/workflows/k8s-setup.yaml
-    secrets: inherit
+    secrets: inherit 
 
 
   deploy:
@@ -58,6 +58,10 @@ jobs:
         with:
           node-version: 22
           cache: "pnpm"
+
+      - name: ctz
+        run: npm install -g ctz
+        shell: bash
 
 
       - name: pnpm approve-builds
