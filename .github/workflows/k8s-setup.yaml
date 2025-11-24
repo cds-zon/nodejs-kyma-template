@@ -25,6 +25,16 @@ env:
 jobs:
   setup-and-verify:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/cds-zon/dev
+      env:
+        KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+        KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+        KUBE_USER: ${{ secrets.KUBE_USER }}
+        KUBE_CONFIG_WORKSPACE: ${{ secrets.KUBE_CONFIG_WORKSPACE }}
+      ports:
+        - 80
+      options: --cpus 1
     steps:
       - name: Check if Kubernetes deployment is configured
         id: check-secrets
@@ -36,11 +46,11 @@ jobs:
           fi
 
 
-      - name: Install kubectl
-        if: steps.check-secrets.outputs.configured == 'true'
-        uses: azure/setup-kubectl@v3
-        with:
-          version: ${{ env.KUBECTL_VERSION }}
+      # - name: Install kubectl
+      #   if: steps.check-secrets.outputs.configured == 'true'
+      #   uses: azure/setup-kubectl@v3
+      #   with:
+      #     version: ${{ env.KUBECTL_VERSION }}
 
       - name: Configure kubectl
         if: steps.check-secrets.outputs.configured == 'true'
