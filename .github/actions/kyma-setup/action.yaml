@@ -61,8 +61,6 @@ runs:
       shell: bash
     - run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       shell: bash
-    - run: npm install -g ctz
-      shell: bash
     - shell: bash
       run: |
           mkdir ${HOME}/kyma-binaries
@@ -70,3 +68,8 @@ runs:
           echo "${{ inputs.password }}" | docker login "${{ inputs.registry }}" -u "${{ inputs.user }}" --password-stdin
           mkdir ${HOME}/.kube
           echo "${{ inputs.kube-config }}" | base64 --decode > ${HOME}/.kube/config
+     - name: Verify cluster connection
+       shell: bash
+       run: |
+          kubectl cluster-info
+          kubectl version --short || kubectl version
