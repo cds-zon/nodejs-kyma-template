@@ -29,7 +29,7 @@ jobs:
     container:
       image: ghcr.io/cds-zon/dev:main
       volumes:         
-        - "${HOME}/.kube/config:/.kube/config"
+        - /github/home/.kube/config:/.kube/config
 
       env:
         KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
