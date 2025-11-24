@@ -26,7 +26,7 @@ jobs:
   setup-and-verify:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/cds-zon/dev
+      image: ghcr.io/cds-zon/dev:main
       env:
         KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
         KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
