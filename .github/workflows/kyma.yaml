@@ -27,14 +27,7 @@ concurrency:
   group: kyma-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  APP_NAME: v1
-jobs:
-  k8s-setup:
-    uses: ./.github/workflows/k8s-setup.yaml
-    secrets: inherit 
-
-
+jobs: 
   deploy:
     runs-on: ubuntu-latest
     container:
