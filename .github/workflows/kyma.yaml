@@ -139,4 +139,4 @@ jobs:
       - uses: ./.github/actions/kyma-info
         if: always()
         with:
-          app: ${{ env.APP_NAME }}
+          app: ${{ env.RELEASE_VERSION }}
