@@ -20,7 +20,7 @@ export const extractLearningsTool = createTool({
 
       const learningExtractionAgent = mastra!.getAgent('learningExtractionAgent');
 
-      const response = await learningExtractionAgent.generateVNext(
+      const response = await learningExtractionAgent.generate(
         [
           {
             role: 'user',

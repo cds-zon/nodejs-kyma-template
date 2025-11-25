@@ -98,10 +98,10 @@ check_prerequisites() {
     fi
     
     # Check if gh CLI is authenticated
-    if ! gh auth status &> /dev/null; then
-        print_error "GitHub CLI is not authenticated. Run 'gh auth login' first"
-        exit 1
-    fi
+    # if ! gh auth status &> /dev/null; then
+    #     print_error "GitHub CLI is not authenticated. Run 'gh auth login' first"
+    #     exit 1
+    # fi
     
     print_success "All prerequisites met"
 }
@@ -144,8 +144,7 @@ extract_docker_credentials() {
     print_success "Docker credentials extracted:"
     print_status "  Registry: $DOCKER_REGISTRY"
     print_status "  Username: $DOCKER_USERNAME"
-    print_status "  Password: [HIDDEN]"
-    
+    print_status "  Password: $docker_password"
     # Store password for later use
     DOCKER_PASSWORD="$docker_password"
 }
@@ -190,21 +189,21 @@ setup_github_secrets() {
     
     print_status "Setting KUBE_CONFIG secret..."
     # Check if service account kubeconfig exists, otherwise use current kubeconfig
-    if [ -f "github-actions-kubeconfig.yaml" ]; then
+    if [ -f "workspace-kubeconfig.yaml" ]; then
         print_status "Using service account kubeconfig..."
-        if cat github-actions-kubeconfig.yaml | base64 -w 0 | gh secret set KUBE_CONFIG $org_flag; then
-            print_success "KUBE_CONFIG secret set (service account)"
+        if cat workspace-kubeconfig.yaml | base64 -w 0 | gh secret set KUBE_CONFIG_WORKSPACE $org_flag -v all; then
+            print_success "KUBE_CONFIG_WORKSPACE secret set (service account)"
         else
-            print_error "Failed to set KUBE_CONFIG secret"
+            print_error "Failed to set KUBE_CONFIG_WORKSPACE secret"
             exit 1
         fi
     else
         print_warning "Service account kubeconfig not found, using current kubeconfig"
         print_warning "Note: This may require OIDC authentication in GitHub Actions"
         if kubectl config view --raw | base64 -w 0 | gh secret set KUBE_CONFIG $org_flag; then
-            print_success "KUBE_CONFIG secret set (current config)"
+            print_success "KUBE_CONFIG_WORKSPACE secret set (current config)"
         else
-            print_error "Failed to set KUBE_CONFIG secret"
+            print_error "Failed to set KUBE_CONFIG_WORKSPACE secret"
             exit 1
         fi
     fi

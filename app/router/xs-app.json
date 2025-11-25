@@ -33,7 +33,7 @@
     },
     {
       "source": "(.*)",
-      "target": "$1",
+      "target": "$1", 
       "destination": "mastra-api",
       "csrfProtection": false,
       "authenticationType": "ias"

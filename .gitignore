@@ -46,3 +46,13 @@ dist
 .env
 *.db
 *.db-*
+
+bin/
+obj/
+.idea/
+temp/
+
+# Kubernetes config files (contain sensitive credentials)
+*kubeconfig.yaml
+workspace-kubeconfig.yaml
+github-actions-kubeconfig.yaml

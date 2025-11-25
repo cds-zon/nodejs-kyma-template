@@ -1,15 +1,13 @@
 packages:
   - app/*
 
+injectWorkspacePackages: true
+
 onlyBuiltDependencies:
   - '@cap-js/cds-types'
+  - '@firebase/util'
   - better-sqlite3
   - esbuild
 
 syncInjectedDepsAfterScripts:
-- build
-injectWorkspacePackages: true
-
-
-
-     
+  - build

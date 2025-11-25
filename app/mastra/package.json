@@ -16,23 +16,29 @@
     "node": ">=22.16.0"
   },
   "dependencies": {
+    "hono": "^4.9.9",
     "@ai-sdk/azure": "^2.0.23",
     "@ai-sdk/openai": "^2.0.23",
     "@ai-sdk/ui-utils": "^1.1.19",
-    "@mastra/core": "^0.18.0",
+    "@mastra/core": "^0.22.2",
+    "@mastra/evals": "^0.14.1",
     "@mastra/fastembed": "^0.10.5",
-    "@mastra/libsql": "^0.14.0",
-    "@mastra/loggers": "^0.10.11",
-    "@mastra/mcp": "^0.13.1",
-    "@mastra/memory": "0.15.3",
-    "@mastra/pg": "^0.16.1",
+    "@mastra/github": "^1.2.12",
+    "@mastra/libsql": "^0.16.0",
+    "@mastra/loggers": "^0.10.17",
+    "@mastra/mcp": "^0.14.0",
+    "@mastra/memory": "0.15.8",
+    "@mastra/pg": "^0.17.5",
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "@sap-cloud-sdk/connectivity": "^4.1.2",
+    "@sap-cloud-sdk/http-client": "^4.1.2",
     "@sap/cds": "^9",
     "@sap/xssec": "^4",
     "ai": "^5.0.15",
     "exa-js": "^1.8.27",
-    "mastra": "0.13.2",
-    "zod": "^3.25.67",
-    "fetch-to-node": "^2.1.0"
+    "fetch-to-node": "^2.1.0",
+    "mastra": "0.17.3",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@cap-js/cds-typer": ">=0.1",
@@ -53,6 +59,29 @@
             },
             "proofToken": {
               "enabled": false
+            }
+          }
+        },
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "alice": {
+              "tenant": "t1",
+              "roles": [
+                "authenticated-user"
+              ],
+              "attr": {
+                "name": "Alice",
+                "email": "alice@example.com",
+                "phone": "1234567890",
+                "address": "123 Main St, Anytown, USA"
+              }
+            },
+            "bob": {
+              "tenant": "t2",
+              "roles": [
+                "authenticated-user"
+              ]
             }
           }
         }

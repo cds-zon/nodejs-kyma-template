@@ -1,9 +1,6 @@
 {
   "cds": {
-    "requires": {
-      "auth": {
-        "kind": "ias"
-      },
+   
       "destinations": {
         "kind": "destinations"
       },

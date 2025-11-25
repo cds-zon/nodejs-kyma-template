@@ -131,6 +131,7 @@ approuter:
         - exact: "http://localhost:9000"
         - exact: "http://localhost:4338"
         - exact: "http://localhost:4111"
+        - regex: "https://.*.euw.devtunnels.ms"
       allowMethods:
         - "GET"
         - "POST"
@@ -184,12 +185,11 @@ mastra:
     enabled: false
   image:
     repository: agents/mastra
-
+  port: 8080
   hpa:
     maxReplicas: 1
     minReplicas: 1
 
-  port: 8080
   resources:
     limits:
       ephemeral-storage: 1Gi
@@ -224,7 +224,6 @@ mastra:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otlp-dashboard:18889
     OTEL_SERVICE_NAME: mastra
     HOST: 0.0.0.0
-    PORT: 8080
     DATABASE_DIR: .
     # # # # POSTGRES_URL: postgres://postgres:postgres@postgresql:5432/postgres
     pg: "false"
@@ -286,10 +285,10 @@ mastra:
 identity:
   serviceOfferingName: identity
   servicePlanName: application
-  externalName: "identity-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
+  externalName: "agents-a2a-oauth"
   parameters:
-    displayName: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
-    display-name: "Identity ({{ $.Release.Namespace }} {{ $.Release.Name }})"
+    name: "{{ .Release.Name }}-a2a"
+    display-name: "A2A Application (rc-{{ .Release.Name }})"
     home-page: https://{{ .Release.Namespace }}.{{ .Values.global.domain }}
     multi-tenant: true
     oauth2-configuration:
@@ -307,6 +306,11 @@ identity:
         - http://localhost:5000/login/callback?authType=ias
         - http://localhost:8081/login/callback?authType=ias
         - http://localhost:5002/login/callback?authType=ias
+        - https://*.euw.devtunnels.ms/login/callback?authType=ias
+        - https://*.oauth.pw/login/callback?authType=ias
+        - https://*.local.oauth.pw/login/callback?authType=ias
+        - https://*.oauth.pw:5000/login/callback?authType=ias
+        - https://*.oauth.pw:5000/login/callback?authType=ias 
 
       post-logout-redirect-uris:
         - https://*.{{ tpl .Values.global.domain . }}/*/logout.html
@@ -316,6 +320,9 @@ identity:
         type: public
       - name: mastra-api
         type: public
+      - name: principal-propagation
+        description: Principal Propagation for Grant Management
+
 
 backendDestinations:
   user-api:
@@ -325,12 +332,13 @@ backendDestinations:
     service: mastra
     forwardAuthToken: true
   srv-api:
-    service: srv
+    service: mastra
+    forwardAuthToken: true
 
 destination:
   serviceOfferingName: destination
   servicePlanName: lite
-  externalName: "destination-{{ $.Release.Namespace }}-{{ $.Release.Name }}"
+  externalName: "a2a-destination"
   parameters:
     version: 1.0.0
 
