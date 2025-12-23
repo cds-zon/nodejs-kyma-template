@@ -25,6 +25,6 @@ export const taskManagerAgent = new Agent({
   model: mainModel,
   tools: async ({ runtimeContext, mastra }) => ({
     // MCP tools for extended capabilities
-    ...await tools({runtimeContext, mastra}),
+    // ...await tools({runtimeContext, mastra}),
   }),
 });
